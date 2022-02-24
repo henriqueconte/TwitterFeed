@@ -8,8 +8,10 @@
 #include <netdb.h>
 #include "../common/headers/packet.h"
 
-int main(int argc, char *argv[]) {
+#define PORT 4000
 
+int main(int argc, char *argv[]) {
+    
     int sockfd, n;
     struct sockaddr_in serv_addr;
     struct hostent *server;
@@ -39,8 +41,8 @@ int main(int argc, char *argv[]) {
         printf("ERROR connecting\n");
 
     printf("Enter the message: ");
-    bzero(packet._payload, sizeof(packet._payload));
-    fgets(packet._payload, sizeof(packet._payload), stdin);
+    bzero(packet._payload, sizeof(*packet._payload));
+    fgets(packet._payload, sizeof(*packet._payload), stdin);
 
     packet.type = 1;
     packet.seqn = 2;

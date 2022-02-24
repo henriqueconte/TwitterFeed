@@ -8,3 +8,5 @@ typedef struct __packet {
     time_t timestamp;       // Timestamp from when the packet was created
     char* _payload;         // Packet information (like "bla bla bla")
 } packet;
+
+#endif
