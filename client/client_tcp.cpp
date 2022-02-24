@@ -6,7 +6,7 @@
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <netdb.h>
-#include "../common/headers/packet.h"
+#include "../shared/headers/packet.h"
 
 #define PORT 4000
 
@@ -22,7 +22,7 @@ int main(int argc, char *argv[]) {
         fprintf(stderr,"usage %s hostname\n", argv[0]);
         exit(0);
     }
-
+    
     server = gethostbyname(argv[1]);
     if (server == NULL) {
         fprintf(stderr,"ERROR, no such host\n");

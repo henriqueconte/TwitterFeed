@@ -5,7 +5,7 @@
 #include <sys/types.h> 
 #include <sys/socket.h>
 #include <netinet/in.h>
-#include "../common/headers/packet.h"
+#include "../shared/headers/packet.h"
 
 #define PORT 4000
 
