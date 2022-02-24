@@ -6,7 +6,7 @@
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <netdb.h>
-#include "../shared/headers/packet.h"
+#include "../shared/headers/packet.hpp"
 
 #define PORT 4000
 
@@ -15,7 +15,7 @@ int main(int argc, char *argv[]) {
     int sockfd, n;
     struct sockaddr_in serv_addr;
     struct hostent *server;
-    packet packet;
+    Packet packet;
     char buffer[256];
 
     if (argc < 2) {
@@ -41,16 +41,16 @@ int main(int argc, char *argv[]) {
         printf("ERROR connecting\n");
 
     printf("Enter the message: ");
-    bzero(packet._payload, sizeof(*packet._payload));
-    fgets(packet._payload, sizeof(*packet._payload), stdin);
+    bzero(buffer, 256);
+    fgets(buffer, 256, stdin);
 
     packet.type = 1;
     packet.seqn = 2;
-    packet.length = strlen(packet._payload);
+    packet.length = 256;
     packet.timestamp = 0;
 
     /* write in the socket */
-    n = write(sockfd, &packet, sizeof(packet));
+    n = write(sockfd, buffer, 256);
     if (n < 0) 
         printf("ERROR writing to socket\n");
 
