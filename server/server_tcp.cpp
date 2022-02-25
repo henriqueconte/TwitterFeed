@@ -40,27 +40,31 @@ int main(int argc, char *argv[]) {
 			printf("ERROR on accept");
 			continue;
 		}
-		
-		bzero(buffer, 256);
-	
-		/* read from the socket */
-		n = read(newsockfd, packet.message, 256);
-		if (n < 0) 
-			printf("ERROR reading from socket");
-		
-		printf("Here is your message: %s\n", packet.message);
 
-		printf("type: %d\n", packet.type);
-		printf("seqn: %d\n", packet.seqn);
-		printf("length: %d\n", packet.length);
-		printf("timestamp: %d\n", packet.timestamp);
-		printf("payload: %s\n", packet.message);
+		while(true) {
+			bzero(buffer, 256);
 		
-		/* write in the socket */ 
-		n = write(newsockfd,"I got your message", 18);
+			/* read from the socket */
+			n = read(newsockfd, packet.message, 256);
+			if (n < 0) {
+				printf("ERROR reading from socket");
+				break;
+			}
 		
-		if (n < 0) 
-			printf("ERROR writing to socket");
+			printf("Here is your message: %s\n", packet.message);
+
+			printf("type: %d\n", packet.type);
+			printf("seqn: %d\n", packet.seqn);
+			printf("length: %d\n", packet.length);
+			printf("timestamp: %d\n", packet.timestamp);
+			printf("payload: %s\n", packet.message);
+			
+			/* write in the socket */ 
+			n = write(newsockfd,"I got your message", 18);
+			
+			if (n < 0) 
+				printf("ERROR writing to socket");
+		}
 
 		close(newsockfd);
 	}	
