@@ -34,31 +34,37 @@ int main(int argc, char *argv[]) {
 	listen(sockfd, 5);
 	
 	clilen = sizeof(struct sockaddr_in);
-	if ((newsockfd = accept(sockfd, (struct sockaddr *) &cli_addr, &clilen)) == -1) 
-		printf("ERROR on accept");
+	while (true) {
+		newsockfd = accept(sockfd, (struct sockaddr *) &cli_addr, &clilen);
+		if (newsockfd == -1) {
+			printf("ERROR on accept");
+			continue;
+		}
+		
+		bzero(buffer, 256);
 	
-    bzero(buffer, 256);
-	
-	/* read from the socket */
-	n = read(newsockfd, packet.message, 256);
-	if (n < 0) 
-		printf("ERROR reading from socket");
-    
-    printf("Here is your message: %s\n", packet.message);
+		/* read from the socket */
+		n = read(newsockfd, packet.message, 256);
+		if (n < 0) 
+			printf("ERROR reading from socket");
+		
+		printf("Here is your message: %s\n", packet.message);
 
-	printf("type: %d\n", packet.type);
-	printf("seqn: %d\n", packet.seqn);
-	printf("length: %d\n", packet.length);
-	printf("timestamp: %d\n", packet.timestamp);
-	printf("payload: %s\n", packet.message);
-	
-	/* write in the socket */ 
-	n = write(newsockfd,"I got your message", 18);
-    
-	if (n < 0) 
-		printf("ERROR writing to socket");
+		printf("type: %d\n", packet.type);
+		printf("seqn: %d\n", packet.seqn);
+		printf("length: %d\n", packet.length);
+		printf("timestamp: %d\n", packet.timestamp);
+		printf("payload: %s\n", packet.message);
+		
+		/* write in the socket */ 
+		n = write(newsockfd,"I got your message", 18);
+		
+		if (n < 0) 
+			printf("ERROR writing to socket");
 
-	close(newsockfd);
+		close(newsockfd);
+	}	
+	
 	close(sockfd);
 	return 0; 
 }
