@@ -2,11 +2,13 @@
 #include <stdlib.h>
 #include <unistd.h>
 #include <string.h>
+#include <cstring>
 #include <sys/types.h>
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <netdb.h>
 #include "../shared/headers/packet.hpp"
+#include "../shared/headers/AuthenticationManager.hpp"
 
 #define PORT 4000
 #include <iostream>
@@ -37,34 +39,37 @@ int main(int argc, char *argv[]) {
     serv_addr.sin_addr = *((struct in_addr *)server->h_addr);
     bzero(&(serv_addr.sin_zero), 8);
 
-    if (connect(sockfd,(struct sockaddr *) &serv_addr,sizeof(serv_addr)) < 0) 
-        printf("ERROR connecting\n");
+    if (AuthenticationManager::login("jose")) {
+        if (connect(sockfd,(struct sockaddr *) &serv_addr,sizeof(serv_addr)) < 0) 
+            printf("ERROR connecting\n");
 
-    while(true) {
-        std::cout << "Enter the message: " << std::endl;
-        std::string inputString;
-        getline(std::cin, inputString);
+        while(true) {
+            std::cout << "Enter the message: " << std::endl;
+            std::string inputString;
+            getline(std::cin, inputString);
 
-        Packet *messagePacket = new Packet(inputString);
-        n = write(sockfd, messagePacket, sizeof(Packet));
-        if (n < 0) {
-            std::cout << "Error: message packet could not be written to socket." << std::endl;
-            continue;
+            Packet *messagePacket = new Packet(inputString);
+            n = write(sockfd, messagePacket, sizeof(Packet));
+            if (n < 0) {
+                std::cout << "Error: message packet could not be written to socket." << std::endl;
+                continue;
+            }
+
+            Packet *receivedPacket = new Packet;
+            n = read(sockfd, receivedPacket, sizeof(Packet));
+            if (n < 0) {
+                std::cout << "Error: response packet could not be read from socket." << std::endl;
+                continue;
+            }
+            
+            std::cout << "Received message: " << receivedPacket->message << " " << std::endl;
+            
+            free(messagePacket);
+            free(receivedPacket);
         }
 
-        Packet *receivedPacket = new Packet;
-        n = read(sockfd, receivedPacket, sizeof(Packet));
-        if (n < 0) {
-            std::cout << "Error: response packet could not be read from socket." << std::endl;
-            continue;
-        }
-        
-        std::cout << "Received message: " << receivedPacket->message << " " << std::endl;
-        
-        free(messagePacket);
-        free(receivedPacket);
+        close(sockfd);
     }
 
-    close(sockfd);
     return 0;
 }
