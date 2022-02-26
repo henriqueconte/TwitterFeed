@@ -43,7 +43,7 @@ int main(int argc, char *argv[]) {
     while(true) {
         std::cout << "Enter the message: " << std::endl;
         std::string inputString;
-        std::cin >> inputString;
+        getline(std::cin, inputString);
 
         Packet *messagePacket = new Packet(inputString);
         n = write(sockfd, messagePacket, sizeof(Packet));
