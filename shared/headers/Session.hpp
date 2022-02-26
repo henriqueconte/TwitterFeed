@@ -9,12 +9,12 @@
 
 class Session {
     public:
-        char* sessionId;
-        char* connectedUserId;
+        std::string sessionId;
+        std::string connectedUserId;
 
         Session(std::string sessionId_, std::string connectedUserId_) {
-            strncpy(sessionId, sessionId_.c_str(), sessionId_.length());
-            strncpy(connectedUserId, connectedUserId_.c_str(), connectedUserId_.length());
+            sessionId = sessionId_;
+            connectedUserId = connectedUserId_;
         }
 };
 

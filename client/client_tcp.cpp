@@ -39,6 +39,7 @@ int main(int argc, char *argv[]) {
     serv_addr.sin_addr = *((struct in_addr *)server->h_addr);
     bzero(&(serv_addr.sin_zero), 8);
 
+    // TODO PONS: Substituir "jose" pelo nome de usuário inserido pelo usuário
     if (AuthenticationManager::login("jose")) {
         if (connect(sockfd,(struct sockaddr *) &serv_addr,sizeof(serv_addr)) < 0) 
             printf("ERROR connecting\n");
