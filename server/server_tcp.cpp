@@ -8,15 +8,12 @@
 #include "../shared/headers/packet.hpp"
 
 #define PORT 4000
+#include <iostream>
 
 int main(int argc, char *argv[]) {
 	int sockfd, newsockfd, n;
 	socklen_t clilen;
 	struct sockaddr_in serv_addr, cli_addr;
-    char buffer[256];
-
-    // I believe we should use the packet struct as explained in class, but I didn't succeed using it... kkkk help
-	Packet packet;
     
 	if ((sockfd = socket(AF_INET, SOCK_STREAM, 0)) == -1) 
         printf("ERROR opening socket");
@@ -34,31 +31,36 @@ int main(int argc, char *argv[]) {
 	listen(sockfd, 5);
 	
 	clilen = sizeof(struct sockaddr_in);
-	if ((newsockfd = accept(sockfd, (struct sockaddr *) &cli_addr, &clilen)) == -1) 
-		printf("ERROR on accept");
-	
-    bzero(buffer, 256);
-	
-	/* read from the socket */
-	n = read(newsockfd, packet.message, 256);
-	if (n < 0) 
-		printf("ERROR reading from socket");
-    
-    printf("Here is your message: %s\n", packet.message);
+	while (true) {
+		newsockfd = accept(sockfd, (struct sockaddr *) &cli_addr, &clilen);
+		if (newsockfd == -1) {
+			printf("ERROR on accept");
+			continue;
+		}
 
-	printf("type: %d\n", packet.type);
-	printf("seqn: %d\n", packet.seqn);
-	printf("length: %d\n", packet.length);
-	printf("timestamp: %d\n", packet.timestamp);
-	printf("payload: %s\n", packet.message);
-	
-	/* write in the socket */ 
-	n = write(newsockfd,"I got your message", 18);
-    
-	if (n < 0) 
-		printf("ERROR writing to socket");
+		while(true) {			
+			Packet *receivedPacket = new Packet;
+			n = read(newsockfd, receivedPacket, sizeof(Packet));
+			if (n < 0) {
+				std::cout << "Error: message packet could not be read from socket." << std::endl;
+				continue;
+			}
+			std::cout << "Received message: " << receivedPacket->message << " " << std::endl;
 
-	close(newsockfd);
+			Packet *responsePacket = new Packet("Your message was received.");
+			n = write(newsockfd, responsePacket, sizeof(Packet));			
+			if (n < 0) {
+				std::cout << "Error: response packet could not be written to socket." << std::endl;
+				continue;
+			}
+
+			free(receivedPacket);
+			free(responsePacket);
+		}
+
+		close(newsockfd);
+	}	
+	
 	close(sockfd);
 	return 0; 
 }
