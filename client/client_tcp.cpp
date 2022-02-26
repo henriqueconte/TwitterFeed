@@ -9,13 +9,13 @@
 #include "../shared/headers/packet.hpp"
 
 #define PORT 4000
+#include <iostream>
 
 int main(int argc, char *argv[]) {
     
     int sockfd, n;
     struct sockaddr_in serv_addr;
     struct hostent *server;
-    Packet packet;
     char buffer[256];
 
     if (argc < 2) {
@@ -41,28 +41,28 @@ int main(int argc, char *argv[]) {
         printf("ERROR connecting\n");
 
     while(true) {
-        printf("Enter the message: ");
-        bzero(buffer, 256);
-        fgets(buffer, 256, stdin);
+        std::cout << "Enter the message: " << std::endl;
+        std::string inputString;
+        std::cin >> inputString;
 
-        packet.type = 1;
-        packet.seqn = 2;
-        packet.length = 256;
-        packet.timestamp = 0;
+        Packet *messagePacket = new Packet(inputString);
+        n = write(sockfd, messagePacket, sizeof(Packet));
+        if (n < 0) {
+            std::cout << "Error: message packet could not be written to socket." << std::endl;
+            continue;
+        }
 
-        /* write in the socket */
-        n = write(sockfd, buffer, 256);
-        if (n < 0) 
-            printf("ERROR writing to socket\n");
-
-        bzero(buffer,256);
-
-        /* read from the socket */
-        n = read(sockfd, buffer, 256);
-        if (n < 0) 
-            printf("ERROR reading from socket\n");
-
-        printf("%s\n",buffer);
+        Packet *receivedPacket = new Packet;
+        n = read(sockfd, receivedPacket, sizeof(Packet));
+        if (n < 0) {
+            std::cout << "Error: response packet could not be read from socket." << std::endl;
+            continue;
+        }
+        
+        std::cout << "Received message: " << receivedPacket->message << " " << std::endl;
+        
+        free(messagePacket);
+        free(receivedPacket);
     }
 
     close(sockfd);
