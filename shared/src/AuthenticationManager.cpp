@@ -32,8 +32,8 @@ bool AuthenticationManager::login(string username) {
 
     if (activeUserSessionCount < 2) {
         // TODO: Generate ID for the session
-        Session* session = new Session("abc123", username);
-        cout << "Sessão criada com sucesso pelo usuário: " << session->connectedUserId << " \n";
+        Session* session = new Session(authManager->generateSessionId(), username);
+        cout << "Sessão criada com sucesso pelo usuário: " << session->connectedUserId << " Id da sessão: " << session->sessionId << " \n";
         authManager->activeSessionsList.push_back(session); 
         cout << "Autenticação do usuário " << username << " realizada com sucesso\n";
         return true;
@@ -53,4 +53,20 @@ AuthenticationManager* AuthenticationManager::getInstance() {
     }
 
     return shared;
+}
+
+string AuthenticationManager::generateSessionId() {
+    int idLength = 8;
+    static const char alphanum[] =
+        "0123456789"
+        "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
+        "abcdefghijklmnopqrstuvwxyz";
+    string tmp_s;
+    tmp_s.reserve(idLength);
+
+    for (int i = 0; i < idLength; ++i) {
+        tmp_s += alphanum[rand() % (sizeof(alphanum) - 1)];
+    }
+    
+    return tmp_s;
 }

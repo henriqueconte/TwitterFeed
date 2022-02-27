@@ -9,7 +9,7 @@
 class AuthenticationManager {
     private: 
         static AuthenticationManager* shared;
-
+        std::string generateSessionId();
         AuthenticationManager();
 
     public:
