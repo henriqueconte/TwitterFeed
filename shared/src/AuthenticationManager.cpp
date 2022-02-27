@@ -20,15 +20,27 @@ AuthenticationManager* AuthenticationManager::shared = 0; // Singleton that will
 
 // Verifies if user is valid to login, and returns if the login succeeded
 bool AuthenticationManager::login(string username) {
-    // TODO: verify if there is already two sessions from the same user
     AuthenticationManager* authManager = AuthenticationManager::getInstance();
 
-    // TODO: Generate ID for the session
-    Session* session = new Session("abc123", username);
-    cout << "Sessão criada com sucesso pelo usuário: " << session->connectedUserId << " \n";
-    authManager->activeSessionsList.push_back(session); 
-    cout << "Autenticação do usuário " << username << " realizada com sucesso\n";
-    return true;
+    // Verifies how many sessions are active with the same username
+    int activeUserSessionCount = 0;
+    for (auto const& element: authManager->activeSessionsList) {
+        if (element->connectedUserId == username) {
+            activeUserSessionCount++;
+        }
+    }
+
+    if (activeUserSessionCount < 2) {
+        // TODO: Generate ID for the session
+        Session* session = new Session("abc123", username);
+        cout << "Sessão criada com sucesso pelo usuário: " << session->connectedUserId << " \n";
+        authManager->activeSessionsList.push_back(session); 
+        cout << "Autenticação do usuário " << username << " realizada com sucesso\n";
+        return true;
+    } else {
+        cout << "User has already too many sessions! Please close one of them before logging in in another machine." << endl;
+        return false;
+    }
 }
 
 // I don't know what this does, I only know it's necessary for the sigleton pattern (https://gist.github.com/pazdera/1098119)
