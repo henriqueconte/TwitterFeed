@@ -18,14 +18,17 @@ int main(int argc, char *argv[]) {
     int sockfd, n;
     struct sockaddr_in serv_addr;
     struct hostent *server;
+    std::string username;
     char buffer[256];
 
-    if (argc < 2) {
-        fprintf(stderr,"usage %s hostname\n", argv[0]);
+    if (argc < 3) {
+        fprintf(stderr,"usage %s hostname username\n", argv[0]);
         exit(0);
     }
     
     server = gethostbyname(argv[1]);
+    username = argv[2];
+
     if (server == NULL) {
         fprintf(stderr,"ERROR, no such host\n");
         exit(0);
@@ -40,7 +43,8 @@ int main(int argc, char *argv[]) {
     bzero(&(serv_addr.sin_zero), 8);
 
     // TODO PONS: Substituir "jose" pelo nome de usuário inserido pelo usuário
-    if (AuthenticationManager::login("jose")) {
+
+    if (AuthenticationManager::login(username)) {
         if (connect(sockfd,(struct sockaddr *) &serv_addr,sizeof(serv_addr)) < 0) 
             printf("ERROR connecting\n");
 
