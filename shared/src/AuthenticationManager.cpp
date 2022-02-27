@@ -24,6 +24,7 @@ bool AuthenticationManager::login(string username) {
 
     // Verifies how many sessions are active with the same username
     int activeUserSessionCount = 0;
+    // TODO Persistência de dados: buscar dados salvo na base de dados para verificar as sessões ativas
     for (auto const& element: authManager->activeSessionsList) {
         if (element->connectedUserId == username) {
             activeUserSessionCount++;
@@ -31,10 +32,10 @@ bool AuthenticationManager::login(string username) {
     }
 
     if (activeUserSessionCount < 2) {
-        // TODO: Generate ID for the session
         Session* session = new Session(authManager->generateSessionId(), username);
         cout << "Sessão criada com sucesso pelo usuário: " << session->connectedUserId << " Id da sessão: " << session->sessionId << " \n";
-        authManager->activeSessionsList.push_back(session); 
+        // TODO Persistência de dados: salvar sessão criada em uma base de dados 
+        authManager->activeSessionsList.push_back(session);
         cout << "Autenticação do usuário " << username << " realizada com sucesso\n";
         return true;
     } else {
