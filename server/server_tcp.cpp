@@ -38,24 +38,60 @@ int main(int argc, char *argv[]) {
 			continue;
 		}
 
-		while(true) {			
+		while(true) {		
+
+            //****
+            // Receives message packet from client to server
+            //****	
 			Packet *receivedPacket = new Packet;
 			n = read(newsockfd, receivedPacket, sizeof(Packet));
 			if (n < 0) {
 				std::cout << "Error: message packet could not be read from socket." << std::endl;
 				continue;
-			}
-			std::cout << "Received message: " << receivedPacket->message << " " << std::endl;
+			} else {
+                std::cout << "Received message: " << receivedPacket->message << " " << std::endl;
+            }
+			
+            //****
+            // Sends acknowledge packet from server to client
+            //****	
+			Packet *sendAckPacket = new Packet("Server acknowledges to have received a packet.");
+			n = write(newsockfd, sendAckPacket, sizeof(Packet));			
+			if (n < 0) {
+				std::cout << "Error: send acknowledge packet could not be written to socket." << std::endl;
+				continue;
+			} else {
+                std::cout << "Sent acknowledge packet to client." << std::endl;
+            }
 
+            //****
+            // Sends message packet from server to client
+            //****	
 			Packet *responsePacket = new Packet("Your message was received.");
 			n = write(newsockfd, responsePacket, sizeof(Packet));			
 			if (n < 0) {
 				std::cout << "Error: response packet could not be written to socket." << std::endl;
 				continue;
-			}
+			} else {
+                std::cout << "Sent response packet to client." << std::endl;
+            }
 
+            //****
+            // Receives acknowledge packet from client to server
+            //****	
+			Packet *receiveAckPacket = new Packet;
+			n = read(newsockfd, receiveAckPacket, sizeof(Packet));
+			if (n < 0) {
+				std::cout << "Error: couldn't read acknowledge packet from socket." << std::endl;
+				continue;
+			} else {
+                std::cout << "Received acknowledge packet from the client. \n\n";
+            }
+			
 			free(receivedPacket);
 			free(responsePacket);
+            free(sendAckPacket);
+            free(receiveAckPacket);
 		}
 
 		close(newsockfd);

@@ -49,24 +49,58 @@ int main(int argc, char *argv[]) {
             std::string inputString;
             getline(std::cin, inputString);
 
+            //****
+            // Sends message packet from client to server
+            //****
             Packet *messagePacket = new Packet(inputString);
-            n = write(sockfd, messagePacket, sizeof(Packet));
+            n = write(sockfd, messagePacket, sizeof(Packet)); // Sends message from client to server
             if (n < 0) {
                 std::cout << "Error: message packet could not be written to socket." << std::endl;
                 continue;
+            } else {
+                std::cout << "Sent message packet to the server." << std::endl;
             }
 
+            //****
+            // Receives acknowledge packet from server to client
+            //****
+            Packet *receiveAckPacket = new Packet;
+            n = read(sockfd, receiveAckPacket, sizeof(Packet));
+            if (n < 0) {
+                std::cout << "Error: couldn't read acknowledge packet from server." << std::endl;
+                continue;
+            } else {
+                std::cout << "Received acknowledge packet from the server." << std::endl;
+            }
+            
+            //****
+            // Receives reply packet from server to client
+            //****
             Packet *receivedPacket = new Packet;
             n = read(sockfd, receivedPacket, sizeof(Packet));
             if (n < 0) {
                 std::cout << "Error: response packet could not be read from socket." << std::endl;
                 continue;
+            } else {
+                std::cout << "Received message: " << receivedPacket->message << " " << std::endl;
             }
             
-            std::cout << "Received message: " << receivedPacket->message << " " << std::endl;
+            //****
+            // Sends acknowledge packet from client to server
+            //****
+            Packet *sendAckPacket = new Packet("Client acknowledges the server reply.");
+            n = write(sockfd, sendAckPacket, sizeof(Packet));
+            if (n < 0) {
+                std::cout << "Error: couldn't send acknowledge packet to server." << std::endl;
+                continue;
+            } else {
+                std::cout << "Sent acknowledge packet to the server. \n\n";
+            }
             
             free(messagePacket);
             free(receivedPacket);
+            free(receiveAckPacket);
+            free(sendAckPacket);
         }
 
         close(sockfd);
