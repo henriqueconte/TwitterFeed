@@ -11,11 +11,12 @@ class AuthenticationManager {
         static AuthenticationManager* shared;
         std::string generateSessionId();
         AuthenticationManager();
-
+        std::string sessionId;
+        
     public:
         std::list<Session *> activeSessionsList; // Array with all active sessions, will be used to verify if user has less than two active sessions, and also to disconnect when user logouts
         
         static AuthenticationManager* getInstance();
         static bool login(std::string username);
-        
+        static void logout();
 };
