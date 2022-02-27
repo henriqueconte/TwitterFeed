@@ -5,16 +5,27 @@
 #include <sys/types.h> 
 #include <sys/socket.h>
 #include <netinet/in.h>
+#include <netdb.h>
 #include <iostream>
-#include "CommunicationManager.hpp"
+#include "../headers/CommunicationManager.hpp"
 #include <list> 
 
-using namespace std;
-
-void CommunicationManager::sendPacket(int socket, Packet* packet) {
-    
+void CommunicationManager::sendPacket(int socket, std::string message) {
+    Packet *packet = new Packet(message);
+    int responseCode = write(socket, packet, sizeof(Packet)); // Sends message from client to server
+    if (responseCode < 0) {
+        std::cout << "Error: packet could not be written to socket." << std::endl;
+    } else {
+        std::cout << "Sent packet to the server." << std::endl;
+    }
 }
 
-void CommunicationManager::receivePacket() {
-
+void CommunicationManager::receivePacket(int socket) {
+    Packet *receivedPacket = new Packet;
+    int responseCode = read(socket, receivedPacket, sizeof(Packet));
+    if (responseCode < 0) {
+        std::cout << "Error: response packet could not be read from socket." << std::endl;
+    } else {
+        std::cout << "Received message: " << receivedPacket->message << " " << std::endl;
+    }
 }

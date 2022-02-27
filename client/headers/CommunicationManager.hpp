@@ -2,12 +2,10 @@
 #include <stdlib.h>
 #include <iostream>
 #include <list> 
-#include "Session.hpp"
-#include "packet.hpp"
+#include "../../shared/headers/packet.hpp"
 
 class CommunicationManager {
     public:
-        CommunicationManager();
-        void sendPacket(int socket, Packet* packet);
-        void receivePacket();
+        void sendPacket(int socket, std::string message);
+        void receivePacket(int socket);
 };

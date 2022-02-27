@@ -9,6 +9,7 @@
 #include <netdb.h>
 #include "../shared/headers/packet.hpp"
 #include "../shared/headers/AuthenticationManager.hpp"
+#include "./headers/CommunicationManager.hpp" 
 
 #define PORT 4000
 #include <iostream>
@@ -20,6 +21,7 @@ int main(int argc, char *argv[]) {
     struct hostent *server;
     std::string username;
     char buffer[256];
+    CommunicationManager commManager = CommunicationManager();
 
     if (argc < 3) {
         fprintf(stderr,"usage %s hostname username\n", argv[0]);
@@ -58,58 +60,19 @@ int main(int argc, char *argv[]) {
             std::string commandType = inputString.substr(0, inputString.find(" "));
             
             if (commandType == "send") {
-                //****
-                // Sends message packet from client to server
-                //****
-                Packet *messagePacket = new Packet(inputString);
-                n = write(sockfd, messagePacket, sizeof(Packet)); // Sends message from client to server
-                if (n < 0) {
-                    std::cout << "Error: message packet could not be written to socket." << std::endl;
-                    continue;
-                } else {
-                    std::cout << "Sent message packet to the server." << std::endl;
-                }
 
-                //****
+                // Sends message packet from client to server
+                commManager.sendPacket(sockfd, inputString);
+
                 // Receives acknowledge packet from server to client
-                //****
-                Packet *receiveAckPacket = new Packet;
-                n = read(sockfd, receiveAckPacket, sizeof(Packet));
-                if (n < 0) {
-                    std::cout << "Error: couldn't read acknowledge packet from server." << std::endl;
-                    continue;
-                } else {
-                    std::cout << "Received acknowledge packet from the server." << std::endl;
-                }
-                
-                //****
+                commManager.receivePacket(sockfd);
+
                 // Receives reply packet from server to client
-                //****
-                Packet *receivedPacket = new Packet;
-                n = read(sockfd, receivedPacket, sizeof(Packet));
-                if (n < 0) {
-                    std::cout << "Error: response packet could not be read from socket." << std::endl;
-                    continue;
-                } else {
-                    std::cout << "Received message: " << receivedPacket->message << " " << std::endl;
-                }
+                commManager.receivePacket(sockfd);
                 
-                //****
                 // Sends acknowledge packet from client to server
-                //****
-                Packet *sendAckPacket = new Packet("Client acknowledges the server reply.");
-                n = write(sockfd, sendAckPacket, sizeof(Packet));
-                if (n < 0) {
-                    std::cout << "Error: couldn't send acknowledge packet to server." << std::endl;
-                    continue;
-                } else {
-                    std::cout << "Sent acknowledge packet to the server. \n\n";
-                }
-                
-                free(messagePacket);
-                free(receivedPacket);
-                free(receiveAckPacket);
-                free(sendAckPacket);
+                commManager.sendPacket(sockfd, "Client acknowledges the server reply.");
+
             } else if (commandType == "follow") {
                 // TODO: Implement follow command
             } else {
