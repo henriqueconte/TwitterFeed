@@ -60,7 +60,9 @@ int main(int argc, char *argv[]) {
         std::cout << "Finished authentication thread." << std::endl << "\n";
         std::string *authString = (std::string *) authenticationResponse;
 
-        if (authString->find("succeeded") != std::string::npos) {
+
+        // Se a autenticação falhar, a string de resposta contém 'failed'. Isso é uma péssima maneira de verificar o resultado.
+        if (authString->find("failed") == std::string::npos) {
             while(true) {		
 
                 // Receives message packet from client to server	
@@ -68,6 +70,7 @@ int main(int argc, char *argv[]) {
 
                 if (messagePacket->type == Logout) {
                     std::cout << "User logging out: " << messagePacket->message << std::endl;
+                    sessionManager.closeSession(messagePacket->message);
                 }
                 
                 // Sends acknowledge packet from server to client
@@ -81,6 +84,7 @@ int main(int argc, char *argv[]) {
 
                 if (messagePacket->type == Logout) {
                     std::cout << "User logging out: " << messagePacket->message << std::endl;
+                    sessionManager.closeSession(messagePacket->message);
                 }
 		    }
         }
@@ -107,11 +111,11 @@ void *authenticateClient(void *data) {
         *responsePacket = Packet("Failed to read authentication socket.", Login);
     } else {
         std::cout << "Received data to authenticate. User login: " << receivedPacket->message << std::endl;
-        
-        if(sessionManager.tryLogin(receivedPacket->message)) {
-            *responsePacket = Packet("Login succeeded", Login);
-        } else {
+        std::string sessionId = sessionManager.tryLogin(receivedPacket->message);
+        if(sessionId == "Authentication failed") {
             *responsePacket = Packet("Login failed. Try closing one of the open sessions.", Login);
+        } else {
+            *responsePacket = Packet(sessionId, Login);
         }
     }
 

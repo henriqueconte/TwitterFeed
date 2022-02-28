@@ -8,26 +8,25 @@
 #include <netinet/in.h>
 #include <netdb.h>
 #include <iostream>
-
 #include <signal.h>
 #include <unistd.h>
-
 
 #include "../shared/headers/packet.hpp"
 #include "../shared/headers/CommunicationManager.hpp" 
 
 #define PORT 4000
-
+#define SESSIONLENGTH 8
 
 void disconnect(int socket);
 
 int sockfd;
+std::string sessionId;
 
 CommunicationManager commManager;
 
 int main(int argc, char *argv[]) {
 
-    // Responsible for handling interruptions like CTRL C
+    // Responsible for handling interruptions like CTRL C.
     struct sigaction sigIntHandler;
     sigIntHandler.sa_handler = disconnect;
     sigemptyset(&sigIntHandler.sa_mask);
@@ -71,9 +70,10 @@ int main(int argc, char *argv[]) {
     Packet* loginPacket = commManager.receivePacket(sockfd);
 
     std::cout << "Authentication result: " << loginPacket->message << std::endl << "\n";
-    if (strcmp(loginPacket->message, "Login succeeded") == 0) {
-        commManager.sendPacket(sockfd, new Packet("Client logged in successfully!.", Login));
 
+    if (loginPacket->length == SESSIONLENGTH) {
+        commManager.sendPacket(sockfd, new Packet("Client logged in successfully!.", Login));
+        sessionId = loginPacket->message;
         while(true) {
             std::cout << "Enter the command: " << std::endl;
             std::string inputString;
@@ -106,7 +106,7 @@ int main(int argc, char *argv[]) {
 
 void disconnect(int signal) {
     std::cout << "Closing the session... " << std::endl;
-    commManager.sendPacket(sockfd, new Packet("sessionId", Logout));
+    commManager.sendPacket(sockfd, new Packet(sessionId, Logout));
     close(sockfd);
     exit(1);
 }
