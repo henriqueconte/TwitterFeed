@@ -7,20 +7,38 @@
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <netdb.h>
+#include <iostream>
+
+#include <signal.h>
+#include <unistd.h>
+
+
 #include "../shared/headers/packet.hpp"
 #include "../shared/headers/CommunicationManager.hpp" 
 
 #define PORT 4000
-#include <iostream>
+
+
+void disconnect(int socket);
+
+int sockfd;
+
+CommunicationManager commManager;
 
 int main(int argc, char *argv[]) {
-    
-    int sockfd, n;
+
+    // Responsible for handling interruptions like CTRL C
+    struct sigaction sigIntHandler;
+    sigIntHandler.sa_handler = disconnect;
+    sigemptyset(&sigIntHandler.sa_mask);
+    sigIntHandler.sa_flags = 0;
+    sigaction(SIGINT, &sigIntHandler, NULL);
+
+    int n;
     struct sockaddr_in serv_addr;
     struct hostent *server;
     std::string username;
     char buffer[256];
-    CommunicationManager commManager = CommunicationManager();
 
     if (argc < 3) {
         fprintf(stderr,"usage %s hostname username\n", argv[0]);
@@ -65,7 +83,6 @@ int main(int argc, char *argv[]) {
             if (commandType == "send") {
 
                 // Sends message packet from client to server
-                // commManager.sendPacket(sockfd, inputString, 1);
                 commManager.sendPacket(sockfd, new Packet(inputString, Message));
 
                 // Receives acknowledge packet from server to client
@@ -75,7 +92,6 @@ int main(int argc, char *argv[]) {
                 commManager.receivePacket(sockfd);
                 
                 // Sends acknowledge packet from client to server
-                // commManager.sendPacket(sockfd, "Client acknowledges the server reply.", 1);
                 commManager.sendPacket(sockfd, new Packet("Client acknowledges the server reply.", Message));
 
             } else if (commandType == "follow") {
@@ -85,7 +101,12 @@ int main(int argc, char *argv[]) {
             }
         }
     }
-    
-    close(sockfd);
     return 0;
+}
+
+void disconnect(int signal) {
+    std::cout << "Closing the session... " << std::endl;
+    commManager.sendPacket(sockfd, new Packet("sessionId", Logout));
+    close(sockfd);
+    exit(1);
 }

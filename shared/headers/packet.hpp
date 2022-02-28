@@ -18,7 +18,7 @@ class Packet {
         Packet() {}
 
         Packet(std::string msg, PacketType packetType) {
-            type = packetType; // TODO: Update this when values of type are defined
+            type = packetType; 
             bzero(&message, BUFFER_LENGTH);
             strncpy(message, msg.c_str(), BUFFER_LENGTH);
             timestamp = time(NULL);

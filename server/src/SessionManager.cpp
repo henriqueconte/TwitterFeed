@@ -36,7 +36,18 @@ bool SessionManager::tryLogin(std::string username) {
 }
 
 void SessionManager::closeSession(std::string sessionId) {
+    int initialNumberOfSessions = activeSessionsList.size();
 
+    for (auto i=activeSessionsList.begin(); i != activeSessionsList.end(); i++) {
+        if ((*i)->sessionId == sessionId) {
+            i = activeSessionsList.erase(i);
+            cout << "Session with id " << sessionId << " closed with success." << endl;
+            break;
+        }
+    }
+    if (activeSessionsList.size() == initialNumberOfSessions) {
+        cout << "Couldn't close session with id " << sessionId << endl;
+    }
 }
 
 string SessionManager::generateSessionId() {

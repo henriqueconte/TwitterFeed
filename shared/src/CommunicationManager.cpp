@@ -25,7 +25,7 @@ Packet* CommunicationManager::receivePacket(int socket) {
     if (responseCode < 0) {
         std::cout << "Error: response packet could not be read from socket." << std::endl;
     } else {
-        std::cout << "Received message: " << receivedPacket->message << " " << std::endl;
+        std::cout << "Received message: " << receivedPacket->message << std::endl;
     }
     return receivedPacket;
 }

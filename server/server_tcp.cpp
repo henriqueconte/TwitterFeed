@@ -65,15 +65,23 @@ int main(int argc, char *argv[]) {
 
                 // Receives message packet from client to server	
                 Packet* messagePacket = commManager.receivePacket(newsockfd);
+
+                if (messagePacket->type == Logout) {
+                    std::cout << "User logging out: " << messagePacket->message << std::endl;
+                }
                 
                 // Sends acknowledge packet from server to client
                 commManager.sendPacket(newsockfd, new Packet("Server acknowledges to have received a packet.", Login));
 
                 // Sends message packet from server to client
                 commManager.sendPacket(newsockfd, new Packet("Your message was received.", Message));
-                
+
                 // Receives acknowledge packet from client to server
-                commManager.receivePacket(newsockfd);
+                messagePacket = commManager.receivePacket(newsockfd);
+
+                if (messagePacket->type == Logout) {
+                    std::cout << "User logging out: " << messagePacket->message << std::endl;
+                }
 		    }
         }
 		
