@@ -6,6 +6,6 @@
 
 class CommunicationManager {
     public:
-        void sendPacket(int socket, std::string message, int packetType);
+        void sendPacket(int socket, Packet* packet);
         Packet* receivePacket(int socket);
 };

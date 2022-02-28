@@ -44,24 +44,21 @@ int main(int argc, char *argv[]) {
     serv_addr.sin_addr = *((struct in_addr *)server->h_addr);
     bzero(&(serv_addr.sin_zero), 8);
 
-    
-    // TODO PONS: Substituir "jose" pelo nome de usuário inserido pelo usuário
-
-    // if (AuthenticationManager::login(username)) {
     if (connect(sockfd,(struct sockaddr *) &serv_addr,sizeof(serv_addr)) < 0) {
         printf("ERROR connecting\n");
         close(sockfd);
         exit(0);
     }             
 
-        commManager.sendPacket(sockfd, username, 0);
+        // commManager.sendPacket(sockfd, username, 0);
+        commManager.sendPacket(sockfd, new Packet(username, Login));
         Packet* loginPacket = commManager.receivePacket(sockfd);
 
         std::cout << "The message is: " << loginPacket->message << std::endl;
         std::cout << "Difference between packet and message: " << strcmp(loginPacket->message, "Login succeeded") << std::endl;
         if (strcmp(loginPacket->message, "Login succeeded") == 0) {
-            std::cout << "at least login succeded" << std::endl;
-            commManager.sendPacket(sockfd, "Client logged in successfully!.", 0); 
+            // commManager.sendPacket(sockfd, "Client logged in successfully!.", 0); 
+            commManager.sendPacket(sockfd, new Packet("Client logged in successfully!.", Login)); 
             while(true) {
                 std::cout << "Enter the command: " << std::endl;
                 std::string inputString;
@@ -71,7 +68,8 @@ int main(int argc, char *argv[]) {
                 if (commandType == "send") {
 
                     // Sends message packet from client to server
-                    commManager.sendPacket(sockfd, inputString, 1);
+                    // commManager.sendPacket(sockfd, inputString, 1);
+                    commManager.sendPacket(sockfd, new Packet(inputString, Message));
 
                     // Receives acknowledge packet from server to client
                     commManager.receivePacket(sockfd);
@@ -80,7 +78,8 @@ int main(int argc, char *argv[]) {
                     commManager.receivePacket(sockfd);
                     
                     // Sends acknowledge packet from client to server
-                    commManager.sendPacket(sockfd, "Client acknowledges the server reply.", 1);
+                    // commManager.sendPacket(sockfd, "Client acknowledges the server reply.", 1);
+                    commManager.sendPacket(sockfd, new Packet("Client acknowledges the server reply.", Message));
 
                 } else if (commandType == "follow") {
                     // TODO: Implement follow command
@@ -93,6 +92,5 @@ int main(int argc, char *argv[]) {
         }
 
         close(sockfd);
-    // }
     return 0;
 }

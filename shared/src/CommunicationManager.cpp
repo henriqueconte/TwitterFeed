@@ -10,14 +10,12 @@
 #include "../headers/CommunicationManager.hpp"
 #include <list> 
 
-void CommunicationManager::sendPacket(int socket, std::string message, int packetType) {
-    Packet *packet = new Packet(message);
-    packet->type = packetType;
+void CommunicationManager::sendPacket(int socket, Packet* packet) {
     int responseCode = write(socket, packet, sizeof(Packet)); // Sends message from client to server
     if (responseCode < 0) {
         std::cout << "Error: packet could not be written to socket." << std::endl;
     } else {
-        std::cout << "Sent packet to the server." << std::endl;
+        std::cout << "Sent packet to the server. Packet message: " << packet->message << std::endl;
     }
 }
 

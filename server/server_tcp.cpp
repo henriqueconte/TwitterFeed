@@ -60,7 +60,7 @@ int main(int argc, char *argv[]) {
 
         std::cout << "THE RESULT OF THE AUTHENTICATION IS: " << *authString << std::endl;
 
-        if (authString->find("succeeded")) {
+        if (authString->find("succeeded") != std::string::npos) {
             std::cout << "FUCKING SUCCEDEDDDDD" << std::endl;
             while(true) {		
 
@@ -81,7 +81,8 @@ int main(int argc, char *argv[]) {
                 //****
                 // Sends acknowledge packet from server to client
                 //****	
-                commManager.sendPacket(newsockfd, "Server acknowledges to have received a packet.", 1);
+                // commManager.sendPacket(newsockfd, "Server acknowledges to have received a packet.", 1);
+                commManager.sendPacket(newsockfd, new Packet("Server acknowledges to have received a packet.", Login));
                 // Packet *sendAckPacket = new Packet("Server acknowledges to have received a packet.");
                 // n = write(newsockfd, sendAckPacket, sizeof(Packet));			
                 // if (n < 0) {
@@ -102,7 +103,8 @@ int main(int argc, char *argv[]) {
                 // } else {
                 //     std::cout << "Sent response packet to client." << std::endl;
                 // }
-                commManager.sendPacket(newsockfd, "Your message was received.", 1);
+                // commManager.sendPacket(newsockfd, "Your message was received.", 1);
+                commManager.sendPacket(newsockfd, new Packet("Your message was received.", Message));
                 
                 //****
                 // Receives acknowledge packet from client to server
@@ -144,19 +146,19 @@ void *authenticateClient(void *data) {
     int readResult = read(clientSocket, receivedPacket, sizeof (Packet));
     if (readResult < 0) {
         std::cout << "Failed to read authentication socket." << std::endl;
-        *responsePacket = Packet("Failed to read authentication socket.");
+        *responsePacket = Packet("Failed to read authentication socket.", Login);
     } else {
         std::cout << "Received data to authenticate. User login: " << receivedPacket->message << std::endl;
         
         if(sessionManager.tryLogin(receivedPacket->message)) {
-            *responsePacket = Packet("Login succeeded");
+            *responsePacket = Packet("Login succeeded", Login);
         } else {
-            *responsePacket = Packet("Login failed. Try closing one of the open sessions.");
+            *responsePacket = Packet("Login failed. Try closing one of the open sessions.", Login);
         }
     }
 
     std::cout << "Sending login response packet to client. Response: " << responsePacket->message << std::endl;
-    commManager.sendPacket(clientSocket, responsePacket->message, 0);
+    commManager.sendPacket(clientSocket, new Packet(responsePacket->message, Login));
 
     return responsePacket->message;
 }
