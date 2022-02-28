@@ -44,6 +44,8 @@ int main(int argc, char *argv[]) {
 			printf("ERROR on accept");
 			continue;
 		}
+
+        // Adding two sessions with username jose to test scenarios with two active sessions. Remove it later.
         sessionManager.tryLogin("jose");
         sessionManager.tryLogin("jose");
 
@@ -55,75 +57,23 @@ int main(int argc, char *argv[]) {
 
         void *authenticationResponse;
         pthread_join(authThread, &authenticationResponse);
-        std::cout << "Finished authentication thread." << std::endl;
+        std::cout << "Finished authentication thread." << std::endl << "\n";
         std::string *authString = (std::string *) authenticationResponse;
 
-        std::cout << "THE RESULT OF THE AUTHENTICATION IS: " << *authString << std::endl;
-
         if (authString->find("succeeded") != std::string::npos) {
-            std::cout << "FUCKING SUCCEDEDDDDD" << std::endl;
             while(true) {		
 
-                //****
-                // Receives message packet from client to server
-                //****	
+                // Receives message packet from client to server	
                 Packet* messagePacket = commManager.receivePacket(newsockfd);
-
-                // Packet *receivedPacket = new Packet;
-                // n = read(newsockfd, receivedPacket, sizeof(Packet));
-                // if (n < 0) {
-                // 	std::cout << "Error: message packet could not be read from socket." << std::endl;
-                // 	continue;
-                // } else {
-                //     std::cout << "Received message: " << receivedPacket->message << " " << std::endl;
-                // }
                 
-                //****
                 // Sends acknowledge packet from server to client
-                //****	
-                // commManager.sendPacket(newsockfd, "Server acknowledges to have received a packet.", 1);
                 commManager.sendPacket(newsockfd, new Packet("Server acknowledges to have received a packet.", Login));
-                // Packet *sendAckPacket = new Packet("Server acknowledges to have received a packet.");
-                // n = write(newsockfd, sendAckPacket, sizeof(Packet));			
-                // if (n < 0) {
-                // 	std::cout << "Error: send acknowledge packet could not be written to socket." << std::endl;
-                // 	continue;
-                // } else {
-                //     std::cout << "Sent acknowledge packet to client." << std::endl;
-                // }
 
-                //****
                 // Sends message packet from server to client
-                //****	
-                // Packet *responsePacket = new Packet("Your message was received.");
-                // n = write(newsockfd, responsePacket, sizeof(Packet));			
-                // if (n < 0) {
-                // 	std::cout << "Error: response packet could not be written to socket." << std::endl;
-                // 	continue;
-                // } else {
-                //     std::cout << "Sent response packet to client." << std::endl;
-                // }
-                // commManager.sendPacket(newsockfd, "Your message was received.", 1);
                 commManager.sendPacket(newsockfd, new Packet("Your message was received.", Message));
                 
-                //****
                 // Receives acknowledge packet from client to server
-                //****	
                 commManager.receivePacket(newsockfd);
-                // Packet *receiveAckPacket = new Packet;
-                
-                // n = read(newsockfd, receiveAckPacket, sizeof(Packet));
-                // if (n < 0) {
-                // 	std::cout << "Error: couldn't read acknowledge packet from socket." << std::endl;
-                // 	continue;
-                // } else {
-                //     std::cout << "Received acknowledge packet from the client. \n\n";
-                // }
-                
-                // free(receivedPacket);
-                // free(responsePacket);
-                // free(sendAckPacket);
-                // free(receiveAckPacket);
 		    }
         }
 		

@@ -8,7 +8,6 @@
 #include <netinet/in.h>
 #include <netdb.h>
 #include "../shared/headers/packet.hpp"
-#include "../shared/headers/AuthenticationManager.hpp"
 #include "../shared/headers/CommunicationManager.hpp" 
 
 #define PORT 4000
@@ -50,47 +49,43 @@ int main(int argc, char *argv[]) {
         exit(0);
     }             
 
-        // commManager.sendPacket(sockfd, username, 0);
-        commManager.sendPacket(sockfd, new Packet(username, Login));
-        Packet* loginPacket = commManager.receivePacket(sockfd);
+    commManager.sendPacket(sockfd, new Packet(username, Login));
+    Packet* loginPacket = commManager.receivePacket(sockfd);
 
-        std::cout << "The message is: " << loginPacket->message << std::endl;
-        std::cout << "Difference between packet and message: " << strcmp(loginPacket->message, "Login succeeded") << std::endl;
-        if (strcmp(loginPacket->message, "Login succeeded") == 0) {
-            // commManager.sendPacket(sockfd, "Client logged in successfully!.", 0); 
-            commManager.sendPacket(sockfd, new Packet("Client logged in successfully!.", Login)); 
-            while(true) {
-                std::cout << "Enter the command: " << std::endl;
-                std::string inputString;
-                getline(std::cin, inputString);
-                std::string commandType = inputString.substr(0, inputString.find(" "));
+    std::cout << "Authentication result: " << loginPacket->message << std::endl << "\n";
+    if (strcmp(loginPacket->message, "Login succeeded") == 0) {
+        commManager.sendPacket(sockfd, new Packet("Client logged in successfully!.", Login));
+
+        while(true) {
+            std::cout << "Enter the command: " << std::endl;
+            std::string inputString;
+            getline(std::cin, inputString);
+            std::string commandType = inputString.substr(0, inputString.find(" "));
+            
+            if (commandType == "send") {
+
+                // Sends message packet from client to server
+                // commManager.sendPacket(sockfd, inputString, 1);
+                commManager.sendPacket(sockfd, new Packet(inputString, Message));
+
+                // Receives acknowledge packet from server to client
+                commManager.receivePacket(sockfd);
+
+                // Receives reply packet from server to client
+                commManager.receivePacket(sockfd);
                 
-                if (commandType == "send") {
+                // Sends acknowledge packet from client to server
+                // commManager.sendPacket(sockfd, "Client acknowledges the server reply.", 1);
+                commManager.sendPacket(sockfd, new Packet("Client acknowledges the server reply.", Message));
 
-                    // Sends message packet from client to server
-                    // commManager.sendPacket(sockfd, inputString, 1);
-                    commManager.sendPacket(sockfd, new Packet(inputString, Message));
-
-                    // Receives acknowledge packet from server to client
-                    commManager.receivePacket(sockfd);
-
-                    // Receives reply packet from server to client
-                    commManager.receivePacket(sockfd);
-                    
-                    // Sends acknowledge packet from client to server
-                    // commManager.sendPacket(sockfd, "Client acknowledges the server reply.", 1);
-                    commManager.sendPacket(sockfd, new Packet("Client acknowledges the server reply.", Message));
-
-                } else if (commandType == "follow") {
-                    // TODO: Implement follow command
-                } else {
-                    std::cout << "Command not recognized. Please try again." << std::endl;
-                }
+            } else if (commandType == "follow") {
+                // TODO: Implement follow command
+            } else {
+                std::cout << "Command not recognized. Please try again." << std::endl;
             }
-        } else {
-            std::cout << "Failed to login. " << loginPacket->message << std::endl;
         }
-
-        close(sockfd);
+    }
+    
+    close(sockfd);
     return 0;
 }
