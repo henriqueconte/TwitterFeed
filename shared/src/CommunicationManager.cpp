@@ -10,8 +10,9 @@
 #include "../headers/CommunicationManager.hpp"
 #include <list> 
 
-void CommunicationManager::sendPacket(int socket, std::string message) {
+void CommunicationManager::sendPacket(int socket, std::string message, int packetType) {
     Packet *packet = new Packet(message);
+    packet->type = packetType;
     int responseCode = write(socket, packet, sizeof(Packet)); // Sends message from client to server
     if (responseCode < 0) {
         std::cout << "Error: packet could not be written to socket." << std::endl;
@@ -20,7 +21,7 @@ void CommunicationManager::sendPacket(int socket, std::string message) {
     }
 }
 
-void CommunicationManager::receivePacket(int socket) {
+Packet* CommunicationManager::receivePacket(int socket) {
     Packet *receivedPacket = new Packet;
     int responseCode = read(socket, receivedPacket, sizeof(Packet));
     if (responseCode < 0) {
@@ -28,4 +29,5 @@ void CommunicationManager::receivePacket(int socket) {
     } else {
         std::cout << "Received message: " << receivedPacket->message << " " << std::endl;
     }
+    return receivedPacket;
 }

@@ -20,28 +20,28 @@ AuthenticationManager* AuthenticationManager::shared = 0; // Singleton that will
 
 // Verifies if user is valid to login, and returns if the login succeeded
 bool AuthenticationManager::login(string username) {
-    AuthenticationManager* authManager = AuthenticationManager::getInstance();
+    // AuthenticationManager* authManager = AuthenticationManager::getInstance();
 
-    // Verifies how many sessions are active with the same username
-    int activeUserSessionCount = 0;
-    // TODO Persistência de dados: buscar dados salvo na base de dados para verificar as sessões ativas
-    for (auto const& element: authManager->activeSessionsList) {
-        if (element->connectedUserId == username) {
-            activeUserSessionCount++;
-        }
-    }
-
-    if (activeUserSessionCount < 2) {
-        Session* session = new Session(authManager->generateSessionId(), username);
-        cout << "Sessão criada com sucesso pelo usuário: " << session->connectedUserId << " Id da sessão: " << session->sessionId << " \n";
-        // TODO Persistência de dados: salvar sessão criada em uma base de dados 
-        authManager->activeSessionsList.push_back(session);
-        cout << "Autenticação do usuário " << username << " realizada com sucesso\n";
-        return true;
-    } else {
-        cout << "User has already too many sessions! Please close one of them before logging in in another machine." << endl;
-        return false;
-    }
+    // // Verifies how many sessions are active with the same username
+    // int activeUserSessionCount = 0;
+    // // TODO Persistência de dados: buscar dados salvo na base de dados para verificar as sessões ativas
+    // for (auto const& element: authManager->activeSessionsList) {
+    //     if (element->connectedUserId == username) {
+    //         activeUserSessionCount++;
+    //     }
+    // }
+    return true;
+    // if (activeUserSessionCount < 2) {
+    //     Session* session = new Session(authManager->generateSessionId(), username);
+    //     cout << "Sessão criada com sucesso pelo usuário: " << session->connectedUserId << " Id da sessão: " << session->sessionId << " \n";
+    //     // TODO Persistência de dados: salvar sessão criada em uma base de dados 
+    //     authManager->activeSessionsList.push_back(session);
+    //     cout << "Autenticação do usuário " << username << " realizada com sucesso\n";
+    //     return true;
+    // } else {
+    //     cout << "User has already too many sessions! Please close one of them before logging in in another machine." << endl;
+    //     return false;
+    // }
 }
 
 // I don't know what this does, I only know it's necessary for the sigleton pattern (https://gist.github.com/pazdera/1098119)

@@ -9,7 +9,7 @@
 #include <netdb.h>
 #include "../shared/headers/packet.hpp"
 #include "../shared/headers/AuthenticationManager.hpp"
-#include "./headers/CommunicationManager.hpp" 
+#include "../shared/headers/CommunicationManager.hpp" 
 
 #define PORT 4000
 #include <iostream>
@@ -44,42 +44,55 @@ int main(int argc, char *argv[]) {
     serv_addr.sin_addr = *((struct in_addr *)server->h_addr);
     bzero(&(serv_addr.sin_zero), 8);
 
+    
     // TODO PONS: Substituir "jose" pelo nome de usuário inserido pelo usuário
 
-    if (AuthenticationManager::login(username)) {
-        if (connect(sockfd,(struct sockaddr *) &serv_addr,sizeof(serv_addr)) < 0) {
-            printf("ERROR connecting\n");
-            close(sockfd);
-            exit(0);
-        }             
-
-        while(true) {
-            std::cout << "Enter the command: " << std::endl;
-            std::string inputString;
-            getline(std::cin, inputString);
-            std::string commandType = inputString.substr(0, inputString.find(" "));
-            
-            if (commandType == "send") {
-
-                // Sends message packet from client to server
-                commManager.sendPacket(sockfd, inputString);
-
-                // Receives acknowledge packet from server to client
-                commManager.receivePacket(sockfd);
-
-                // Receives reply packet from server to client
-                commManager.receivePacket(sockfd);
-                
-                // Sends acknowledge packet from client to server
-                commManager.sendPacket(sockfd, "Client acknowledges the server reply.");
-
-            } else if (commandType == "follow") {
-                // TODO: Implement follow command
-            } else {
-                std::cout << "Command not recognized. Please try again." << std::endl;
-            }
-        }
+    // if (AuthenticationManager::login(username)) {
+    if (connect(sockfd,(struct sockaddr *) &serv_addr,sizeof(serv_addr)) < 0) {
+        printf("ERROR connecting\n");
         close(sockfd);
-    }
+        exit(0);
+    }             
+
+        commManager.sendPacket(sockfd, username, 0);
+        Packet* loginPacket = commManager.receivePacket(sockfd);
+
+        std::cout << "The message is: " << loginPacket->message << std::endl;
+        std::cout << "Difference between packet and message: " << strcmp(loginPacket->message, "Login succeeded") << std::endl;
+        if (strcmp(loginPacket->message, "Login succeeded") == 0) {
+            std::cout << "at least login succeded" << std::endl;
+            commManager.sendPacket(sockfd, "Client logged in successfully!.", 0); 
+            while(true) {
+                std::cout << "Enter the command: " << std::endl;
+                std::string inputString;
+                getline(std::cin, inputString);
+                std::string commandType = inputString.substr(0, inputString.find(" "));
+                
+                if (commandType == "send") {
+
+                    // Sends message packet from client to server
+                    commManager.sendPacket(sockfd, inputString, 1);
+
+                    // Receives acknowledge packet from server to client
+                    commManager.receivePacket(sockfd);
+
+                    // Receives reply packet from server to client
+                    commManager.receivePacket(sockfd);
+                    
+                    // Sends acknowledge packet from client to server
+                    commManager.sendPacket(sockfd, "Client acknowledges the server reply.", 1);
+
+                } else if (commandType == "follow") {
+                    // TODO: Implement follow command
+                } else {
+                    std::cout << "Command not recognized. Please try again." << std::endl;
+                }
+            }
+        } else {
+            std::cout << "Failed to login. " << loginPacket->message << std::endl;
+        }
+
+        close(sockfd);
+    // }
     return 0;
 }
