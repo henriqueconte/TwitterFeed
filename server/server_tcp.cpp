@@ -112,9 +112,6 @@ void *serveClient(void *data) {
         //  Receives message packet from client to server	
         Packet* messagePacket = commManager.receivePacket(clientSocket);
 
-        // Sends acknowledge packet from server to client
-        // commManager.sendPacket(clientSocket, new Packet("Server acknowledges to have received a packet.", Login));
-
         // Handle command type accordingly
         switch (messagePacket->type) {
             case Login: // TODO: Handle login here

@@ -10,7 +10,6 @@
 #include <iostream>
 #include <signal.h>
 #include <unistd.h>
-#include <mutex>
 
 #include "../shared/headers/packet.hpp"
 #include "../shared/headers/CommunicationManager.hpp" 
@@ -22,7 +21,6 @@ void disconnect(int socket);
 
 int sockfd;
 std::string sessionId;
-std::mutex clientMutex; 
 
 CommunicationManager commManager;
 
@@ -75,7 +73,6 @@ int main(int argc, char *argv[]) {
 
     if (loginPacket->length == SESSIONLENGTH) {
         commManager.sendPacket(sockfd, new Packet("Client logged in successfully!.", Login));
-        // commManager.receivePacket(sockfd);
         sessionId = loginPacket->message;
         while(true) {
             std::cout << "Enter the command: " << std::endl;
@@ -109,12 +106,8 @@ int main(int argc, char *argv[]) {
 
 void disconnect(int signal) {
     std::cout << "Closing the session... " << std::endl;
-    clientMutex.lock();
     commManager.sendPacket(sockfd, new Packet(sessionId, Logout));
-    clientMutex.unlock();
-    clientMutex.lock();
     commManager.receivePacket(sockfd);
-    clientMutex.unlock();
     close(sockfd);
     exit(1);
 }
