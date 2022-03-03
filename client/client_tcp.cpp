@@ -75,6 +75,7 @@ int main(int argc, char *argv[]) {
 
     if (loginPacket->length == SESSIONLENGTH) {
         commManager.sendPacket(sockfd, new Packet("Client logged in successfully!.", Login));
+        // commManager.receivePacket(sockfd);
         sessionId = loginPacket->message;
         while(true) {
             std::cout << "Enter the command: " << std::endl;

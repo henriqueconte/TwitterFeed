@@ -97,6 +97,7 @@ void *authenticateClient(void *data) {
 
     std::cout << "Sending login response packet to client. Response: " << responsePacket->message << std::endl;
     commManager.sendPacket(clientSocket, new Packet(responsePacket->message, Login));
+    commManager.receivePacket(clientSocket);
 
     return responsePacket->message;
 }
@@ -112,13 +113,26 @@ void *serveClient(void *data) {
         Packet* messagePacket = commManager.receivePacket(clientSocket);
 
         // Sends acknowledge packet from server to client
-        commManager.sendPacket(clientSocket, new Packet("Server acknowledges to have received a packet.", Login));
+        // commManager.sendPacket(clientSocket, new Packet("Server acknowledges to have received a packet.", Login));
 
         // Handle command type accordingly
         switch (messagePacket->type) {
             case Login: // TODO: Handle login here
+                commManager.sendPacket(clientSocket, new Packet("Your login message was received.", Login));
+
+                // Receives acknowledge packet from client to server
+                messagePacket = commManager.receivePacket(clientSocket);
                 break;
             case Message:
+
+                // Sends acknowledge packet from server to client
+                commManager.sendPacket(clientSocket, new Packet("Server acknowledges to have received a packet.", Login));
+
+                // Sends message packet from server to client
+                commManager.sendPacket(clientSocket, new Packet("Your message content was received.", Message));
+
+                // Receives acknowledge packet from client to server
+                messagePacket = commManager.receivePacket(clientSocket);
                 break;
             case Follow:
                 break;
@@ -128,12 +142,6 @@ void *serveClient(void *data) {
                 shouldExit = true;
                 break;
         }
-
-        // Sends message packet from server to client
-        commManager.sendPacket(clientSocket, new Packet("Your message was received.", Message));
-
-        // Receives acknowledge packet from client to server
-        // messagePacket = commManager.receivePacket(clientSocket);
 
         delete messagePacket;
     }

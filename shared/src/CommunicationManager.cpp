@@ -27,6 +27,5 @@ Packet* CommunicationManager::receivePacket(int socket) {
     } else {
         std::cout << "Received message: " << receivedPacket->message << std::endl;
     }
-    std::cout << "TIPO DO PACOTE ANTES: " << receivedPacket->type << std::endl;
     return receivedPacket;
 }
