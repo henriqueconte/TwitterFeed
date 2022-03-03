@@ -61,7 +61,7 @@ int main(int argc, char *argv[]) {
         std::cout << "Finished authentication thread." << std::endl << "\n";
         std::string *authString = (std::string *) authenticationResponse;
 
-        // Se a autenticação falhar, a string de resposta contém 'failed'. Isso é uma péssima maneira de verificar o resultado.
+        // Caso a string não contenha "failed", a condição vai ser verdadeira e o usuário será autenticado.
         if (authString->find("failed") == std::string::npos) {
             pthread_t serviceThread;
             std::cout << "Created serving thread." << std::endl;
@@ -133,7 +133,7 @@ void *serveClient(void *data) {
         commManager.sendPacket(clientSocket, new Packet("Your message was received.", Message));
 
         // Receives acknowledge packet from client to server
-        messagePacket = commManager.receivePacket(clientSocket);
+        // messagePacket = commManager.receivePacket(clientSocket);
 
         delete messagePacket;
     }
