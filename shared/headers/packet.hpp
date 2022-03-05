@@ -9,7 +9,7 @@ enum PacketType { Login, Message, Logout };
 
 class Packet {
     public:
-        PacketType type;          // Packet type (ex: Login | Message)
+        PacketType type;          // Packet type (ex: Login | Message | Logout)
         int seqn;          // Sequence number (packet ID)
         int length;        // Payload size (packet size)
         long int timestamp;       // Timestamp from when the packet was created
