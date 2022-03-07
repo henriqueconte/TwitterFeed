@@ -107,8 +107,11 @@ int main(int argc, char *argv[]) {
 
                 // Receives acknowledge packet from client to server
                 messagePacket = commManager.receivePacket(newsockfd);
-
-                /**if (messagePacket->type == Logout) {
+                    
+                /**
+                 * Acho que essa parte aqui embaixo foi copiada e colada
+                 * 
+                 * if (messagePacket->type == Logout) {
                     std::cout << "User logging out: " << messagePacket->message << std::endl;
                     sessionManager.closeSession(messagePacket->message);
                 }
