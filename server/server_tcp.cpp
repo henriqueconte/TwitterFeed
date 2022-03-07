@@ -68,11 +68,37 @@ int main(int argc, char *argv[]) {
                 // Receives message packet from client to server	
                 Packet* messagePacket = commManager.receivePacket(newsockfd);
 
-                if (messagePacket->type == Logout) {
+                /*if (messagePacket->type == Logout) {
                     std::cout << "User logging out: " << messagePacket->message << std::endl;
                     sessionManager.closeSession(messagePacket->message);
                 }
-                
+                */
+
+                switch(messagePacket->type)
+                {
+                    case Logout:
+                    std::cout << "User logging out: " << messagePacket->message << std::endl;
+                    sessionManager.closeSession(messagePacket->message);
+                    break;
+
+                    case Follow:
+                    //coisas do follow
+                    /*
+                    escreve no arquivo que guarda coisa de seguidores
+                    */
+                    break;
+
+                    case Login:
+                    //coisas de login... talveeez precise pra tratar erro mas nao sei
+                    break;
+
+                    case Message:
+                    //coisa de send message....
+                    
+
+                    break;
+                }
+            
                 // Sends acknowledge packet from server to client
                 commManager.sendPacket(newsockfd, new Packet("Server acknowledges to have received a packet.", Login));
 
@@ -82,10 +108,12 @@ int main(int argc, char *argv[]) {
                 // Receives acknowledge packet from client to server
                 messagePacket = commManager.receivePacket(newsockfd);
 
-                if (messagePacket->type == Logout) {
+                /**if (messagePacket->type == Logout) {
                     std::cout << "User logging out: " << messagePacket->message << std::endl;
                     sessionManager.closeSession(messagePacket->message);
                 }
+
+                **/
 		    }
         }
 		
