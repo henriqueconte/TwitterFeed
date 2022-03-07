@@ -1,6 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
-
+#include <stdint.h>
 #ifndef _NOTIFICATIONS_H
 #define _NOTIFICATIONS_H
 
