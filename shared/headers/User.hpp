@@ -3,6 +3,7 @@
 #include <pthread.h>
 #include <Session.hpp>
 #include <map>
+#include <notification.hpp>
 
 using namespace std;
 using std::string;
@@ -10,17 +11,17 @@ class User
 {
 private:
 
+    /* data */
+public:
+
     list<std::string> followers;
 
     map<string,Session> sessions;
 
-    /* data */
-public:
-
-
     string username;
     pthread_t thread_id;
-    list<string> pend_notifications;
+    //Aqui pode ser uma lista do tipo Notification tambem
+    list<notification> pend_notifications;
 
     User(/* args */);
     User(string username);
@@ -28,19 +29,7 @@ public:
 
     ~User();
 
-    list<string> getFollowers();
-    list<string> getPend_Notifications();
 
-    //ou void sla
-    bool addNewNotifications(int notificationId);
-    void getNotifications();
-    
-    bool hasSessionwithId(string SessionId);
-    Session getSessionWithId(string SessionId);
-    //bool UpdateSession(string SessionId);
-    void addNewSession(string SessionId, Session session);
-    void RemoveSession(string SessionId);
-    map<string,Session> getSessions();
 
 
 
