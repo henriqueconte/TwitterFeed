@@ -12,6 +12,7 @@
 #define PORT 4000
 #include <iostream>
 
+void *serveClient(void *data);
 void *authenticateClient(void *data);
 
 SessionManager sessionManager;
@@ -60,37 +61,12 @@ int main(int argc, char *argv[]) {
         std::cout << "Finished authentication thread." << std::endl << "\n";
         std::string *authString = (std::string *) authenticationResponse;
 
-
-        // Se a autenticação falhar, a string de resposta contém 'failed'. Isso é uma péssima maneira de verificar o resultado.
+        // Caso a string não contenha "failed", a condição vai ser verdadeira e o usuário será autenticado.
         if (authString->find("failed") == std::string::npos) {
-            while(true) {		
-
-                // Receives message packet from client to server	
-                Packet* messagePacket = commManager.receivePacket(newsockfd);
-
-                if (messagePacket->type == Logout) {
-                    std::cout << "User logging out: " << messagePacket->message << std::endl;
-                    sessionManager.closeSession(messagePacket->message);
-                }
-                
-                // Sends acknowledge packet from server to client
-                commManager.sendPacket(newsockfd, new Packet("Server acknowledges to have received a packet.", Login));
-
-                // Sends message packet from server to client
-                commManager.sendPacket(newsockfd, new Packet("Your message was received.", Message));
-
-                // Receives acknowledge packet from client to server
-                messagePacket = commManager.receivePacket(newsockfd);
-
-                if (messagePacket->type == Logout) {
-                    std::cout << "User logging out: " << messagePacket->message << std::endl;
-                    sessionManager.closeSession(messagePacket->message);
-                }
-		    }
+            pthread_t serviceThread;
+            std::cout << "Created serving thread." << std::endl;
+            pthread_create(&serviceThread, NULL, &serveClient, (void *) socketCopy);
         }
-		
-
-		close(newsockfd);
 	}	
 	
 	close(sockfd);
@@ -121,6 +97,53 @@ void *authenticateClient(void *data) {
 
     std::cout << "Sending login response packet to client. Response: " << responsePacket->message << std::endl;
     commManager.sendPacket(clientSocket, new Packet(responsePacket->message, Login));
+    commManager.receivePacket(clientSocket);
 
     return responsePacket->message;
+}
+
+void *serveClient(void *data) {
+    int *socketCopy = (int *) data;
+    int clientSocket = *socketCopy;
+
+    bool shouldExit = false;
+
+    while(!shouldExit) {		
+        //  Receives message packet from client to server	
+        Packet* messagePacket = commManager.receivePacket(clientSocket);
+
+        // Handle command type accordingly
+        switch (messagePacket->type) {
+            case Login: // TODO: Handle login here
+                commManager.sendPacket(clientSocket, new Packet("Your login message was received.", Login));
+
+                // Receives acknowledge packet from client to server
+                messagePacket = commManager.receivePacket(clientSocket);
+                break;
+            case Message:
+
+                // Sends acknowledge packet from server to client
+                commManager.sendPacket(clientSocket, new Packet("Server acknowledges to have received a packet.", Login));
+
+                // Sends message packet from server to client
+                commManager.sendPacket(clientSocket, new Packet("Your message content was received.", Message));
+
+                // Receives acknowledge packet from client to server
+                messagePacket = commManager.receivePacket(clientSocket);
+                break;
+            case Follow:
+                break;
+            case Logout:
+                std::cout << "User logging out: " << messagePacket->message << std::endl;
+                sessionManager.closeSession(messagePacket->message);
+                shouldExit = true;
+                break;
+        }
+
+        delete messagePacket;
+    }
+
+    close(clientSocket);
+
+    return 0;
 }

@@ -107,6 +107,7 @@ int main(int argc, char *argv[]) {
 void disconnect(int signal) {
     std::cout << "Closing the session... " << std::endl;
     commManager.sendPacket(sockfd, new Packet(sessionId, Logout));
+    commManager.receivePacket(sockfd);
     close(sockfd);
     exit(1);
 }
