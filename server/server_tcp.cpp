@@ -59,10 +59,10 @@ int main(int argc, char *argv[]) {
         void *authenticationResponse;
         pthread_join(authThread, &authenticationResponse);
         std::cout << "Finished authentication thread." << std::endl << "\n";
-        std::string *authString = (std::string *) authenticationResponse;
+        Session *session = (Session *) authenticationResponse;
 
-        // Caso a string não contenha "failed", a condição vai ser verdadeira e o usuário será autenticado.
-        if (authString->find("failed") == std::string::npos) {
+        // If the session is open, the authentication was a success.
+        if (session->sessionStatus == Open) {
             pthread_t serviceThread;
             std::cout << "Created serving thread." << std::endl;
             pthread_create(&serviceThread, NULL, &serveClient, (void *) socketCopy);
@@ -80,6 +80,7 @@ void *authenticateClient(void *data) {
     Packet *receivedPacket = new Packet;
     std::string *finalResult;
     Packet *responsePacket = new Packet;
+    Session *session = new Session;
 
     int readResult = read(clientSocket, receivedPacket, sizeof (Packet));
     if (readResult < 0) {
@@ -87,11 +88,11 @@ void *authenticateClient(void *data) {
         *responsePacket = Packet("Failed to read authentication socket.", Login);
     } else {
         std::cout << "Received data to authenticate. User login: " << receivedPacket->message << std::endl;
-        std::string sessionId = sessionManager.tryLogin(receivedPacket->message);
-        if(sessionId == "Authentication failed") {
+        session = sessionManager.tryLogin(receivedPacket->message);
+        if(session->sessionStatus == Failed) {
             *responsePacket = Packet("Login failed. Try closing one of the open sessions.", Login);
         } else {
-            *responsePacket = Packet(sessionId, Login);
+            *responsePacket = Packet(session->sessionId, Login);
         }
     }
 
@@ -99,7 +100,7 @@ void *authenticateClient(void *data) {
     commManager.sendPacket(clientSocket, new Packet(responsePacket->message, Login));
     commManager.receivePacket(clientSocket);
 
-    return responsePacket->message;
+    return session;
 }
 
 void *serveClient(void *data) {

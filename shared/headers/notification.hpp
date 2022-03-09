@@ -1,17 +1,29 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <string>
+#include <list>
 
-#ifndef _NOTIFICATIONS_H
-#define _NOTIFICATIONS_H
+using namespace std;
 
- //  STRUCTS
-typedef struct __notification {
-    uint32_t id;            // Notification id
-    char author[20];        // User name
-    uint32_t timestamp;     // Notification timestamp
-    char* message;          // Notification message
-    uint16_t length;        // Message length
-    uint16_t pendingCount;  // Amount of users that haven't yet received the notification
-} notification;
+class Notification {
+    public:
+        string id;
+        string message;
+        string senderId;
+        long int timestamp;
 
-#endif
+        Notification::Notification
+        (
+            string id,
+            string message,
+            string senderId,
+            long int timestamp
+        ) {
+            this->id = id;
+            this->message = message;
+            this->senderId = senderId;
+            this->timestamp = timestamp;
+        }
+
+        Notification(){}
+};

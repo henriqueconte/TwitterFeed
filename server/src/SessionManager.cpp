@@ -12,7 +12,7 @@
 
 using namespace std;
 
-std::string SessionManager::tryLogin(std::string username) {
+Session* SessionManager::tryLogin(std::string username) {
     // Verifies how many sessions are active with the same username
     int activeUserSessionCount = 0;
     // TODO Persistência de dados: buscar dados salvo na base de dados para verificar as sessões ativas
@@ -23,15 +23,17 @@ std::string SessionManager::tryLogin(std::string username) {
     }
 
     if (activeUserSessionCount < 2) {
-        Session* session = new Session(generateSessionId(), username);
+        Session* session = new Session(generateSessionId(), username, Open);
         cout << "Sessão criada com sucesso para o usuário: " << session->connectedUserId << ". Id da sessão: " << session->sessionId << " \n";
         // TODO Persistência de dados: salvar sessão criada em uma base de dados 
         activeSessionsList.push_back(session);
         cout << "Autenticação do usuário " << username << " realizada com sucesso." << endl;
-        return session->sessionId;
+
+        return session;
     } else {
         cout << "User has already too many sessions! Please close one of them before logging in in another machine." << endl;
-        return "Authentication failed";
+        
+        return new Session("", "", Failed);
     }
 }
 
