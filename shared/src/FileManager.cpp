@@ -18,13 +18,13 @@ void CreateFile(string file_name)
     ofstream MyFile(file_name);
 }
 
-map<string,list<string>> ReturnFollowers(string file_name)
+map<string,list <string> > ReturnFollowers(string file_name)
 {
     ifstream MyReadFile(file_name);
     
     string line,word,key;
 
-    map<string,list<string>> followers_map;
+    map<string,list <string> > followers_map;
     int i;
     while(getline(MyReadFile,line))
     {   
@@ -35,7 +35,7 @@ map<string,list<string>> ReturnFollowers(string file_name)
         {
             if (i == 0)
             {   list<string> followers;
-                followers_map.insert({word,followers});
+                followers_map.insert(std::make_pair(word,followers));
                 key = word;
                 i += 1;
             }
