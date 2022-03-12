@@ -5,6 +5,9 @@
 #include <list>
 #include <vector>
 #include <sstream>
+#include "../headers/FileManager.hpp"
+
+
 using namespace std;
 using std::string;
 /*
@@ -12,13 +15,13 @@ Arquivo csv, primeiro nome é o usuário, resto seus seguidores.
 
 
 */
-void CreateFile(string file_name)
+void FileManager::CreateFile(string file_name)
 {
 
     ofstream MyFile(file_name);
 }
 
-map<string,list <string> > ReturnFollowers(string file_name)
+map<string,list <string> > FileManager::ReturnFollowers(string file_name)
 {
     ifstream MyReadFile(file_name);
     
@@ -52,7 +55,7 @@ map<string,list <string> > ReturnFollowers(string file_name)
 }
 
 
-void WriteToFile(string file_name, string followed, string follower)
+void FileManager::WriteToFile(string file_name, string followed, string follower)
 {
     ifstream MyReadFile(file_name);
     ofstream temp("temp.txt"); 
@@ -115,7 +118,7 @@ void WriteToFile(string file_name, string followed, string follower)
 
 
 
-void WriteFollowers(string file_name, string followed, string follower)
+void FileManager::WriteFollowers(string file_name, string followed, string follower)
 {
     WriteToFile(file_name,followed,follower);
 

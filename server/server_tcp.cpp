@@ -8,6 +8,7 @@
 #include "../shared/headers/packet.hpp"
 #include "../shared/headers/CommunicationManager.hpp"
 #include "headers/SessionManager.hpp"
+#include "../shared/headers/FileManager.hpp"
 
 #define PORT 4000
 #include <iostream>
@@ -17,11 +18,15 @@ void *authenticateClient(void *data);
 
 SessionManager sessionManager;
 CommunicationManager commManager;
+FileManager fileManager;
 
 int main(int argc, char *argv[]) {
 	int sockfd, newsockfd, n;
 	socklen_t clilen;
 	struct sockaddr_in serv_addr, cli_addr;
+    std::string fileName = "users.txt";
+
+    fileManager.CreateFile(fileName);
 
 	if ((sockfd = socket(AF_INET, SOCK_STREAM, 0)) == -1) 
         printf("ERROR opening socket");

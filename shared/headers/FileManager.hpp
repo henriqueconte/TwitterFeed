@@ -8,8 +8,14 @@
 using namespace std;
 using std::string;
 
-void CreateFile(string file_name);
 
-map<string,list<string>> ReturnFollowers(string file_name);
-void WriteToFile(string file_name, string followed, string follower);
-void WriteFollowers(string file_name, string followed, string follower);
+class FileManager {
+    public:
+        // FileManager();
+        void CreateFile(string file_name);
+
+        map<string,list <string> > ReturnFollowers(string file_name);
+        void WriteToFile(string file_name, string followed, string follower);
+        void WriteFollowers(string file_name, string followed, string follower);
+};
+

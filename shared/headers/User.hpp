@@ -21,18 +21,12 @@ public:
     string username;
     pthread_t thread_id;
     //Aqui pode ser uma lista do tipo Notification tambem
-    list<notification> pend_notifications;
+    list<Notification> pend_notifications;
 
     User(/* args */);
     User(string username);
     User(string username,list<string>pend_notifications, list<string> followers);
 
     ~User();
-
-
-
-
-
-
 };
 
