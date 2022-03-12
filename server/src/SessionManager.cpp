@@ -16,6 +16,7 @@ Session* SessionManager::tryLogin(std::string username) {
     // Verifies how many sessions are active with the same username
     int activeUserSessionCount = 0;
     // TODO Persistência de dados: buscar dados salvo na base de dados para verificar as sessões ativas
+    // TODO (Pedro): Use map instead of a list to handle active sessions
     for (auto const& element: activeSessionsList) {
         if (element->connectedUserId == username) {
             activeUserSessionCount++;
@@ -40,7 +41,7 @@ Session* SessionManager::tryLogin(std::string username) {
 void SessionManager::closeSession(std::string sessionId) {
     int initialNumberOfSessions = activeSessionsList.size();
 
-    for (auto i=activeSessionsList.begin(); i != activeSessionsList.end(); i++) {
+    for (auto i = activeSessionsList.begin(); i != activeSessionsList.end(); i++) {
         if ((*i)->sessionId == sessionId) {
             i = activeSessionsList.erase(i);
             cout << "Session with id " << sessionId << " closed with success." << endl;
@@ -63,7 +64,7 @@ string SessionManager::generateSessionId() {
     tmp_s.reserve(idLength);
 
     for (int i = 0; i < idLength; ++i) {
-        tmp_s += alphanum[rand() % (sizeof(alphanum) - 1)];
+        tmp_s += alphanum[rand() % (sizeof(alphanum) - 1)]; // TODO: Prevent the repetition of session ids?? (Low priority)
     }
     
     return tmp_s;

@@ -32,7 +32,7 @@ CommunicationManager commManager;
 
 int main(int argc, char *argv[]) {
 
-    // Responsible for handling interruptions like CTRL C.
+    // Responsible for handling interruptions like CTRL + C.
     struct sigaction sigIntHandler;
     sigIntHandler.sa_handler = disconnect;
     sigemptyset(&sigIntHandler.sa_mask);
@@ -90,7 +90,7 @@ int main(int argc, char *argv[]) {
                 commManager.sendPacket(sockfd, new Packet(inputString, Message));
 
                 // Sends acknowledge packet from client to server
-                commManager.sendPacket(sockfd, new Packet("Client acknowledges the server reply.", Message));
+                commManager.sendPacket(sockfd, new Packet("Client acknowledges the server's response.", Message));
 
             } else if (commandType == "follow") {
                 // TODO: Implement follow command
