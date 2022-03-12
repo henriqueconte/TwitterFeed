@@ -14,6 +14,8 @@ class Session {
         std::string sessionId;
         std::string connectedUserId;
         SessionStatus sessionStatus;
+        int* socket;
+        int* notifSocket;
 
         Session(std::string sessionId_, std::string connectedUserId_, SessionStatus sessionStatus_) {
             sessionId = sessionId_;

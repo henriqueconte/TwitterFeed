@@ -9,6 +9,7 @@
 #include <iostream>
 #include "../headers/CommunicationManager.hpp"
 #include <list> 
+#include "../headers/Session.hpp"
 
 void CommunicationManager::sendPacket(int socket, Packet* packet) {
     int responseCode = write(socket, packet, sizeof(Packet)); // Sends message from client to server
@@ -28,4 +29,21 @@ Packet* CommunicationManager::receivePacket(int socket) {
         std::cout << "Received message: " << receivedPacket->message << std::endl;
     }
     return receivedPacket;
+}
+
+void CommunicationManager::sendNotification(std::string senderId, Packet* packet, std::list<Session *> activeSessionsList) {
+    for (auto const& element: activeSessionsList) {
+        // if (element->connectedUserId == username) {
+        //     activeUserSessionCount++;
+        // }
+        if (element->connectedUserId != senderId) {
+            std::cout << "Different used id. Connected user id: " << element->connectedUserId << " senderId: " << senderId << std::endl;
+            sendPacket(*element->socket, packet);
+            // receivePacket(*element->socket);
+        }
+    }
+}
+
+void startListeningForNotifications(std::string userId) {
+    
 }

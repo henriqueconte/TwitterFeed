@@ -47,8 +47,8 @@ int main(int argc, char *argv[]) {
 		}
 
         // Adding two sessions with username jose to test scenarios with two active sessions. Remove it later.
-        sessionManager.tryLogin("jose");
-        sessionManager.tryLogin("jose");
+        // sessionManager.tryLogin("jose");
+        // sessionManager.tryLogin("jose");
 
         pthread_t authThread;
         std::cout << "Created authentication thread." << std::endl;
@@ -60,13 +60,16 @@ int main(int argc, char *argv[]) {
         pthread_join(authThread, &authenticationResponse);
         std::cout << "Finished authentication thread." << std::endl << "\n";
         Session *session = (Session *) authenticationResponse;
+        session->socket = socketCopy;
 
         // If the session is open, the authentication was a success.
         if (session->sessionStatus == Open) {
             pthread_t serviceThread;
             std::cout << "Created serving thread." << std::endl;
-            pthread_create(&serviceThread, NULL, &serveClient, (void *) socketCopy);
+            pthread_create(&serviceThread, NULL, &serveClient, (void *) session);
+            
         }
+        // TALVEZ TENHA QUE INICIAR LEITURA DE NOTIFICAÇÕES AQUI! 
 	}	
 	
 	close(sockfd);
@@ -104,8 +107,8 @@ void *authenticateClient(void *data) {
 }
 
 void *serveClient(void *data) {
-    int *socketCopy = (int *) data;
-    int clientSocket = *socketCopy;
+    Session *session = (Session *) data;
+    int clientSocket = *session->socket;
 
     bool shouldExit = false;
 
@@ -128,6 +131,7 @@ void *serveClient(void *data) {
 
                 // Sends message packet from server to client
                 commManager.sendPacket(clientSocket, new Packet("Your message content was received.", Message));
+                commManager.sendNotification(session->connectedUserId, messagePacket, sessionManager.activeSessionsList);
 
                 // Receives acknowledge packet from client to server
                 messagePacket = commManager.receivePacket(clientSocket);
