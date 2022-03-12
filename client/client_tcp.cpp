@@ -23,7 +23,6 @@ void disconnect(int socket);
 void connect(int socket, hostent *server);
 
 int sockfd;
-int notifSocket;
 std::string sessionId;
 std::mutex clientMutex;
 
@@ -62,13 +61,7 @@ int main(int argc, char *argv[]) {
     if ((sockfd = socket(AF_INET, SOCK_STREAM, 0)) == -1) 
         printf("ERROR opening socket\n");
 
-    if ((notifSocket = socket(AF_INET, SOCK_STREAM, 0)) == -1) 
-        printf("ERROR opening notification socket\n");
-
-    // clientMutex.lock();
-    connect(sockfd, server);
-    // connect(notifSocket, server);
-    // clientMutex.unlock();
+    connect(sockfd, server);  
 
     commManager.sendPacket(sockfd, new Packet(username, Login));
     Packet* loginPacket = commManager.receivePacket(sockfd);
@@ -83,7 +76,7 @@ int main(int argc, char *argv[]) {
         pthread_t notificationThread;
         int *socketCopy = (int*) malloc(sizeof (int));
         *socketCopy = sockfd;
-        // pthread_create(&notificationThread, NULL, &listenNotifications, (void *) socketCopy);
+        pthread_create(&notificationThread, NULL, &listenNotifications, (void *) socketCopy);
 
         while(true) {
             std::cout << "Enter the command: " << std::endl;
@@ -96,12 +89,6 @@ int main(int argc, char *argv[]) {
                 // Sends message packet from client to server
                 commManager.sendPacket(sockfd, new Packet(inputString, Message));
 
-                // Receives acknowledge packet from server to client
-                commManager.receivePacket(sockfd);
-
-                // Receives reply packet from server to client
-                commManager.receivePacket(sockfd);
-                
                 // Sends acknowledge packet from client to server
                 commManager.sendPacket(sockfd, new Packet("Client acknowledges the server reply.", Message));
 

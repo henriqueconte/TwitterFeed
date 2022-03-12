@@ -36,7 +36,7 @@ int main(int argc, char *argv[]) {
 		printf("ERROR on binding");
 	
     // Allows 5 clients at the same time
-	listen(sockfd, 5);
+	listen(sockfd, 25);
 	
 	clilen = sizeof(struct sockaddr_in);
 	while (true) {
@@ -67,7 +67,7 @@ int main(int argc, char *argv[]) {
             pthread_t serviceThread;
             std::cout << "Created serving thread." << std::endl;
             pthread_create(&serviceThread, NULL, &serveClient, (void *) session);
-            
+
         }
         // TALVEZ TENHA QUE INICIAR LEITURA DE NOTIFICAÇÕES AQUI! 
 	}	
@@ -130,7 +130,7 @@ void *serveClient(void *data) {
                 commManager.sendPacket(clientSocket, new Packet("Server acknowledges to have received a packet.", Login));
 
                 // Sends message packet from server to client
-                commManager.sendPacket(clientSocket, new Packet("Your message content was received.", Message));
+                // commManager.sendPacket(clientSocket, new Packet("Your message content was received.", Message));
                 commManager.sendNotification(session->connectedUserId, messagePacket, sessionManager.activeSessionsList);
 
                 // Receives acknowledge packet from client to server

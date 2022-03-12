@@ -33,17 +33,10 @@ Packet* CommunicationManager::receivePacket(int socket) {
 
 void CommunicationManager::sendNotification(std::string senderId, Packet* packet, std::list<Session *> activeSessionsList) {
     for (auto const& element: activeSessionsList) {
-        // if (element->connectedUserId == username) {
-        //     activeUserSessionCount++;
-        // }
         if (element->connectedUserId != senderId) {
             std::cout << "Different used id. Connected user id: " << element->connectedUserId << " senderId: " << senderId << std::endl;
             sendPacket(*element->socket, packet);
             // receivePacket(*element->socket);
         }
     }
-}
-
-void startListeningForNotifications(std::string userId) {
-    
 }
