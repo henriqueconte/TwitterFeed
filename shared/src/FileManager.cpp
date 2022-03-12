@@ -7,7 +7,6 @@
 #include <sstream>
 #include "../headers/FileManager.hpp"
 
-
 using namespace std;
 using std::string;
 /*
@@ -15,121 +14,117 @@ Arquivo csv, primeiro nome é o usuário, resto seus seguidores.
 
 
 */
-void FileManager::CreateFile(string file_name)
+
+// CreateFile <- so instancia o arquivo e cria se n tiver
+// ReturnUsers
+map<string,list <string> > FileManager::CreateFile(string file_name)
 {
     ifstream ifile;
     ifile.open("users.txt");
-    if(ifile) {
-        // Ler arquivo de texto e passar para estruturas de usuário.
-    } else {
+    map<string, list<string>> followersMap;
+    if (!ifile)
+    {
         ofstream MyFile(file_name);
+        return followersMap;
     }
 }
 
-map<string,list <string> > FileManager::ReturnFollowers(string file_name)
+map<string, list<string>> FileManager::ReturnUsers(string file_name)
 {
     ifstream MyReadFile(file_name);
-    
-    string line,word,key;
+    string line, word, key;
+    map<string, list<string>> followersMap;
 
-    map<string,list <string> > followers_map;
     int i;
-    while(getline(MyReadFile,line))
-    {   
+    while (getline(MyReadFile, line))
+    {
         i = 0;
         stringstream str(line);
-        
-        while (getline(str,word,','))
+
+        while (getline(str, word, ','))
         {
             if (i == 0)
-            {   list<string> followers;
-                followers_map.insert(std::make_pair(word,followers));
+            {
+                list<string> followers;
+                followersMap.insert(std::make_pair(word, followers));
                 key = word;
                 i += 1;
             }
 
             else
             {
-                followers_map[key].push_back(word);
+                followersMap[key].push_back(word);
             }
-
         }
     }
-    return followers_map;
-
+    return followersMap;
 }
-
 
 void FileManager::WriteToFile(string file_name, string followed, string follower)
 {
     ifstream MyReadFile(file_name);
-    ofstream temp("temp.txt"); 
-    string line,word,key;
+    ofstream temp("temp.txt");
+    string line, word, key;
 
     int i;
-    bool is_this_line,already_in_file;
+    bool is_this_line, already_in_file;
 
-    if(followed == follower)
+    if (followed == follower)
     {
         cout << "Não pode seguir a si mesmo! " << endl;
         return;
     }
     already_in_file = false;
-    while(getline(MyReadFile,line))
-    {   
+    while (getline(MyReadFile, line))
+    {
         i = 0;
         is_this_line = false;
         stringstream str(line);
-        
-        while (getline(str,word,','))
+
+        while (getline(str, word, ','))
         {
-            
-            if(i == 0)
+
+            if (i == 0)
             {
-                if(word == followed)
+                if (word == followed)
                 {
                     is_this_line = true;
                     already_in_file = true;
-                    
                 }
 
                 temp << word;
-            
             }
 
-           else
-           {
-               temp << ", " << word;
-           }
+            else
+            {
+                temp << ", " << word;
+            }
             i++;
-
         }
-        if(is_this_line)
+        if (is_this_line)
         {
             temp << ", " << follower;
         }
         temp << endl;
     }
 
-    if(!already_in_file)
+    if (!already_in_file)
     {
-        if (follower == "") {
+        if (follower == "")
+        {
             temp << followed << endl;
-        } else {
+        }
+        else
+        {
             temp << followed << ", " << follower << endl;
         }
-        
     }
 
     remove("users.txt");
-    rename("temp.txt","users.txt");
-
+    rename("temp.txt", "users.txt");
 }
-
-
 
 void FileManager::WriteFollowers(string file_name, string followed, string follower)
 {
-    WriteToFile(file_name,followed,follower);
-
+    WriteToFile(file_name, followed, follower);
 }

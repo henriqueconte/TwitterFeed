@@ -10,23 +10,20 @@ using std::string;
 class User
 {
 private:
-
     /* data */
 public:
-
     list<std::string> followers;
 
-    map<string,Session> sessions;
+    map<string, Session> sessions;
 
     string username;
-    pthread_t thread_id;
-    //Aqui pode ser uma lista do tipo Notification tambem
-    list<Notification> pend_notifications;
+    pthread_t threadId;
+    // Aqui pode ser uma lista do tipo Notification tambem
+    list<Notification> pendingNotifications;
 
     User(/* args */);
     User(string username);
-    User(string username,list<string>pend_notifications, list<string> followers);
+    User(string username, list<string> pendingNotifications, list<string> followers);
 
     ~User();
 };
-

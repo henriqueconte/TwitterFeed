@@ -11,11 +11,11 @@ class UserManager
 {
 private:
 
-    std::map<string,User*> UserMap;
+    std::map<string, User*> userMap;
     
     list<string> getFollowers(string username);
-    list<Notification> getPend_Notifications(string username);
-
+    list<Notification> getPendingNotifications(string username);
+    map<string, User*> loadUsers();
     //ou void sla
     void addNewNotifications(string username, Notification notification);
     list<Notification> getNotifications(string username);
