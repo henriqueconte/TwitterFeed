@@ -14,11 +14,11 @@ private:
     std::map<string,User*> UserMap;
     
     list<string> getFollowers(string username);
-    list<notification> getPend_Notifications(string username);
+    list<Notification> getPend_Notifications(string username);
 
     //ou void sla
-    void addNewNotifications(string username, notification notification);
-    list<notification> getNotifications(string username);
+    void addNewNotifications(string username, Notification notification);
+    list<Notification> getNotifications(string username);
 
     /* data */
 public:

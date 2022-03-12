@@ -14,19 +14,19 @@ list<string> UserManager::getFollowers(string username)
 
 }
 
-list<notification> UserManager::getPend_Notifications(string username)
+list<Notification> UserManager::getPend_Notifications(string username)
 {
 
     return UserMap[username]->pend_notifications;
 }
 
-void UserManager::addNewNotifications(string username, notification notification)
+void UserManager::addNewNotifications(string username, Notification notification)
 {
     UserMap[username]->pend_notifications.push_front(notification);
     
 }
 
-list<notification> UserManager::getNotifications(string username)
+list<Notification> UserManager::getNotifications(string username)
 {
 
     return UserMap[username]->pend_notifications;

@@ -19,12 +19,12 @@ void *authenticateClient(void *data);
 SessionManager sessionManager;
 CommunicationManager commManager;
 FileManager fileManager;
+std::string fileName = "users.txt";
 
 int main(int argc, char *argv[]) {
 	int sockfd, newsockfd, n;
 	socklen_t clilen;
 	struct sockaddr_in serv_addr, cli_addr;
-    std::string fileName = "users.txt";
 
     fileManager.CreateFile(fileName);
 

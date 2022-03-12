@@ -17,8 +17,13 @@ Arquivo csv, primeiro nome é o usuário, resto seus seguidores.
 */
 void FileManager::CreateFile(string file_name)
 {
-
-    ofstream MyFile(file_name);
+    ifstream ifile;
+    ifile.open("users.txt");
+    if(ifile) {
+        // Ler arquivo de texto e passar para estruturas de usuário.
+    } else {
+        ofstream MyFile(file_name);
+    }
 }
 
 map<string,list <string> > FileManager::ReturnFollowers(string file_name)
@@ -108,7 +113,12 @@ void FileManager::WriteToFile(string file_name, string followed, string follower
 
     if(!already_in_file)
     {
-        temp << followed << ", " << follower << endl;
+        if (follower == "") {
+            temp << followed << endl;
+        } else {
+            temp << followed << ", " << follower << endl;
+        }
+        
     }
 
     remove("users.txt");
