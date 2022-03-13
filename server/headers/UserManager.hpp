@@ -18,4 +18,5 @@ class UserManager
         list<Notification *> getNotifications(string username);
         void loadUsers();
         void addNewNotifications(string username, Notification notification);
+        bool IsFollowing(string followed, string follower);
 };

@@ -8,6 +8,8 @@
 #include <map>
 #include <algorithm>
 #include "../../shared/headers/notification.hpp"
+#include <algorithm>
+#include "../../shared/headers/FileManager.hpp"
 
 list<string> UserManager::getFollowers(string username)
 {
