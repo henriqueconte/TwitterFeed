@@ -1,3 +1,5 @@
+#pragma once
+
 #include <iostream>
 #include <fstream>
 #include <string>
@@ -11,10 +13,9 @@ using std::string;
 
 class FileManager {
     public:
-        FileManager();
         map<string,list <string> >  CreateFile(string file_name);
 
-        map<string,list <string>> ReturnUsers(string file_name);
+        map<string, list <string>> ReturnUsers(string file_name);
         void WriteToFile(string file_name, string followed, string follower);
         void WriteFollowers(string file_name, string followed, string follower);
         

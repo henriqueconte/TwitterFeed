@@ -25,7 +25,16 @@ public:
     list<Notification> pendingNotifications;
 
     User(/* args */);
-    User(string username);
+    User(string username)
+    {
+        this->username = username;
+    }
+    User(string username, list<string> followers = list<string> ())
+    {
+        this->username = username;
+        this->followers = followers; 
+    }
+
     User(string username, list<Notification> pendingNotifications, list<string> followers);
 
     ~User();

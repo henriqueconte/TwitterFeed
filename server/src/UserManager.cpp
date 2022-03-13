@@ -9,7 +9,6 @@
 #include <algorithm>
 #include "../../shared/headers/notification.hpp"
 #include <algorithm>
-#include "../../shared/headers/FileManager.hpp"
 
 list<string> UserManager::getFollowers(string username)
 {
@@ -34,14 +33,16 @@ list<Notification> UserManager::getNotifications(string username)
 void UserManager::loadUsers()
 {
     FileManager fileManager;
-    map<string, list<string>> userMap = fileManager.ReturnUsers("users.txt");
-    if (!userMap.empty()) // Why 
-    {
-        for (auto const &pair : userMap)
+    map<string, list<string>> followersMap = fileManager.ReturnUsers("users.txt");
+
+    if (!followersMap.empty()) // Why 
+    {   
+        for (auto const &pair : followersMap)
         {
             auto key = pair.first;
             auto followers = pair.second;
-            userMap[key]->followers = followers;
+            User* newUser = new User(key, followers);
+            userMap.insert(std::make_pair(key, newUser));
         }
     }
 }
