@@ -13,8 +13,8 @@ public:
     std::map<string, User*> userMap;
     
     list<string> getFollowers(string username);
-    list<Notification> getPendingNotifications(string username);
-    list<Notification> getNotifications(string username);
+    list<Notification*> getPendingNotifications(string username);
+    list<Notification*> getNotifications(string username);
     void loadUsers();
     void addNewNotifications(string username, Notification notification);
 };

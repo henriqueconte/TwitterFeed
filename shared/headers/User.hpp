@@ -1,3 +1,6 @@
+#ifndef USER_H
+#define USER_H
+
 #include <string>
 #include <list>
 #include <thread>
@@ -12,7 +15,7 @@ class User
 private:
     /* data */
 public:
-    list<std::string> followers;
+    list<string> followers;
 
     map<string, Session*> sessions;
 
@@ -27,3 +30,5 @@ public:
 
     ~User();
 };
+
+#endif
