@@ -42,7 +42,7 @@ void CommunicationManager::sendNotification(std::string senderId, Packet* packet
         if (std::find(followers.begin(), followers.end(), element->connectedUserId) != followers.end()) { // coringuei mano vai tomar no cu olha o que eu preciso fazer pra checar se tem um elemento na lista VAI TOMAR NO CU        
             std::cout << "Found follower id: " << element->connectedUserId << " senderId: " << senderId << std::endl;
             sendPacket(*element->socket, packet);
-            receivePacket(*element->socket);
+            //receivePacket(*element->socket);
         }
     }
 }
