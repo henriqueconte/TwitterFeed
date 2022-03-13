@@ -11,7 +11,8 @@ class UserManager
 {
     public:
         std::map<string, User*> userMap;
-
+        void addUser(string username);
+        void addFollower(string followed, string follower);
         list<string> getFollowers(string username);
         list<Notification> getPendingNotifications(string username);
         list<Notification> getNotifications(string username);

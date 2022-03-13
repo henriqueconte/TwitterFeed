@@ -24,11 +24,10 @@ public:
     // Aqui pode ser uma lista do tipo Notification tambem
     list<Notification> pendingNotifications;
 
-    User(/* args */);
-    User(string username)
-    {
-        this->username = username;
-    }
+    // User(string username)
+    // {
+    //     this->username = username;
+    // }
     User(string username, list<string> followers = list<string> ())
     {
         this->username = username;

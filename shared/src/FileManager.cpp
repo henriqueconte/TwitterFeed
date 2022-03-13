@@ -85,7 +85,7 @@ void FileManager::WriteToFile(string file_name, string followed, string follower
 
         while (getline(str, word, ','))
         {
-
+            word.erase( std::remove(word.begin(), word.end(), '\r'), word.end() );
             if (i == 0)
             {
                 if (word == followed)
@@ -99,13 +99,13 @@ void FileManager::WriteToFile(string file_name, string followed, string follower
 
             else
             {
-                temp << ", " << word;
+                temp << "," << word;
             }
             i++;
         }
         if (is_this_line)
         {
-            temp << ", " << follower;
+            temp << "," << follower;
         }
         temp << endl;
     }
@@ -118,7 +118,7 @@ void FileManager::WriteToFile(string file_name, string followed, string follower
         }
         else
         {
-            temp << followed << ", " << follower << endl;
+            temp << followed << "," << follower << endl;
         }
     }
 
@@ -126,7 +126,12 @@ void FileManager::WriteToFile(string file_name, string followed, string follower
     rename("temp.txt", "users.txt");
 }
 
-void FileManager::WriteFollowers(string file_name, string followed, string follower)
+void FileManager::writeFollower(string file_name, string followed, string follower)
 {
     WriteToFile(file_name, followed, follower);
+}
+
+void FileManager::writeUser(string file_name, string followed)
+{
+    WriteToFile(file_name, followed, "");
 }

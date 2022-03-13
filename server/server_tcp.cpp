@@ -20,7 +20,6 @@ void *authenticateClient(void *data);
 SessionManager sessionManager;
 CommunicationManager commManager;
 UserManager userManager;
-FileManager fileManager;
 
 std::string fileName = "users.txt";
 
@@ -77,6 +76,7 @@ int main(int argc, char *argv[])
         // If the session is open, the authentication was a success.
         if (session->sessionStatus == Open)
         {
+            userManager.addUser(session->connectedUserId);
             pthread_t serviceThread;
             std::cout << "Created serving thread." << std::endl;
             pthread_create(&serviceThread, NULL, &serveClient, (void *)session);
@@ -164,11 +164,9 @@ void *serveClient(void *data)
             std::string usersString = messagePacket->message;
 
             std::string delimiter = "|";
-            std::string followed = usersString.substr(0, usersString.find(delimiter)); 
-            std::string follower = usersString.substr(followed.length() + 1, usersString.find(delimiter)); 
-
-            fileManager.WriteToFile(fileName, followed, follower);
-
+            std::string follower = usersString.substr(0, usersString.find(delimiter)); 
+            std::string followed = usersString.substr(follower.length() + 1, usersString.find(delimiter)); 
+            userManager.addFollower(followed, follower);
             break;
         }
 

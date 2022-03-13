@@ -10,6 +10,24 @@
 #include "../../shared/headers/notification.hpp"
 #include <algorithm>
 
+FileManager fileManager;
+
+void UserManager::addUser(string username)
+{
+    if ( userMap.find(username) == userMap.end() ) { // User not yet in map
+        User* newUser = new User(username);
+        userMap.insert(std::make_pair(username, newUser));
+        fileManager.writeUser("users.txt", username);
+    }
+}
+
+void UserManager::addFollower(string followed, string follower)
+{
+    // Test if not following yet, test if followed user exists
+    userMap[followed]->followers.push_back(follower);
+    fileManager.writeFollower("users.txt", followed, follower);
+}
+
 list<string> UserManager::getFollowers(string username)
 {
     return userMap[username]->followers;
@@ -32,7 +50,6 @@ list<Notification> UserManager::getNotifications(string username)
 
 void UserManager::loadUsers()
 {
-    FileManager fileManager;
     map<string, list<string> > followersMap = fileManager.ReturnUsers("users.txt");
 
     if (!followersMap.empty()) // Why 

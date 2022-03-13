@@ -17,7 +17,7 @@ class FileManager {
 
         map<string, list <string> > ReturnUsers(string file_name);
         void WriteToFile(string file_name, string followed, string follower);
-        void WriteFollowers(string file_name, string followed, string follower);
-        
+        void writeFollower(string file_name, string followed, string follower);
+        void writeUser(string file_name, string followed);
 };
 
