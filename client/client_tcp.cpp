@@ -12,6 +12,7 @@
 #include <unistd.h>
 #include <thread>
 #include <mutex>
+#include <map>
 #include "../shared/headers/packet.hpp"
 #include "../shared/headers/CommunicationManager.hpp"
 

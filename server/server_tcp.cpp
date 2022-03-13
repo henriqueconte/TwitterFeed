@@ -8,6 +8,7 @@
 #include "../shared/headers/packet.hpp"
 #include "../shared/headers/CommunicationManager.hpp"
 #include "headers/SessionManager.hpp"
+#include "headers/UserManager.hpp"
 #include "../shared/headers/FileManager.hpp"
 
 #define PORT 4000
@@ -27,10 +28,10 @@ int main(int argc, char *argv[])
     socklen_t clilen;
     struct sockaddr_in serv_addr, cli_addr;
 
-    userManager.setFollowersFromFile
+    userManager.loadUsers();
 
-        if ((sockfd = socket(AF_INET, SOCK_STREAM, 0)) == -1)
-            printf("ERROR opening socket");
+    if ((sockfd = socket(AF_INET, SOCK_STREAM, 0)) == -1)
+        printf("ERROR opening socket");
 
     serv_addr.sin_family = AF_INET;
     serv_addr.sin_port = htons(PORT);
@@ -150,12 +151,13 @@ void *serveClient(void *data)
 
             // Sends message packet from server to client
             // commManager.sendPacket(clientSocket, new Packet("Your message content was received.", Message));
-            commManager.sendNotification(session->connectedUserId, messagePacket, sessionManager.activeSessionsList);
+            commManager.sendNotification(session->connectedUserId, messagePacket, sessionManager.activeSessionsList, userManager.userMap);
 
             // Receives acknowledge packet from client to server
             messagePacket = commManager.receivePacket(clientSocket);
             break;
         case Follow:
+            //TODO: Actually implement follow
             break;
         case Logout:
             std::cout << "User logging out: " << messagePacket->message << std::endl;

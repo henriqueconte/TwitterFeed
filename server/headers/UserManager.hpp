@@ -9,19 +9,12 @@
 using namespace std;
 class UserManager
 {
-private:
-
+public:
     std::map<string, User*> userMap;
     
     list<string> getFollowers(string username);
     list<Notification> getPendingNotifications(string username);
-    map<string, User*> loadUsers();
-    //ou void sla
-    void addNewNotifications(string username, Notification notification);
     list<Notification> getNotifications(string username);
-
-    /* data */
-public:
-    UserManager(/* args */);
-    ~UserManager();
+    void loadUsers();
+    void addNewNotifications(string username, Notification notification);
 };

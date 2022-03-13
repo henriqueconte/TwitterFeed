@@ -9,7 +9,9 @@
 #include <iostream>
 #include "../headers/CommunicationManager.hpp"
 #include <list> 
+#include <map> 
 #include "../headers/Session.hpp"
+#include "../headers/User.hpp"
 
 void CommunicationManager::sendPacket(int socket, Packet* packet) {
     int responseCode = write(socket, packet, sizeof(Packet)); // Sends message from client to server
@@ -31,10 +33,11 @@ Packet* CommunicationManager::receivePacket(int socket) {
     return receivedPacket;
 }
 
-void CommunicationManager::sendNotification(std::string senderId, Packet* packet, std::list<Session *> activeSessionsList) {
+void CommunicationManager::sendNotification(std::string senderId, Packet* packet, std::list<Session *> activeSessionsList, std::map<std::string, User*> userMap) {
+    list<string> followers = userMap[senderId]->followers;
     for (auto const& element: activeSessionsList) {
-        if (element->connectedUserId != senderId) {
-            std::cout << "Different used id. Connected user id: " << element->connectedUserId << " senderId: " << senderId << std::endl;
+        if (std::find(followers.begin(), followers.end(), element->connectedUserId) != followers.end()) { // coringuei mano vai tomar no cu olha o que eu preciso fazer pra checar se tem um elemento na lista VAI TOMAR NO CU
+            std::cout << "Found follower id: " << element->connectedUserId << " senderId: " << senderId << std::endl;
             sendPacket(*element->socket, packet);
             // receivePacket(*element->socket);
         }

@@ -1,2 +1,4 @@
 pedro
-LAURA, JOANA, maria
+laura, joana, maria
+joana, pedro
+maria

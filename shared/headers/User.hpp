@@ -1,9 +1,9 @@
 #include <string>
 #include <list>
-#include <pthread.h>
-#include <Session.hpp>
+#include <thread>
 #include <map>
-#include <notification.hpp>
+#include "../headers/Session.hpp"
+#include "../headers/notification.hpp"
 
 using namespace std;
 using std::string;

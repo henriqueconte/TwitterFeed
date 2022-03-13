@@ -9,50 +9,43 @@
 
 list<string> UserManager::getFollowers(string username)
 {
-    return followersMap[username]->followers;
+    return userMap[username]->followers;
 }
 
 list<Notification> UserManager::getPendingNotifications(string username)
 {
-
-    return followersMap[username]->pendingNotifications;
+    return userMap[username]->pendingNotifications;
 }
 
 void UserManager::addNewNotifications(string username, Notification notification)
 {
-    followersMap[username]->pendingNotifications.push_front(notification);
+    userMap[username]->pendingNotifications.push_front(notification);
 }
 
 list<Notification> UserManager::getNotifications(string username)
 {
 
-    return followersMap[username]->pendingNotifications;
+    return userMap[username]->pendingNotifications;
 }
 
-map<string, User*> UserManager::loadUsers()
+void UserManager::loadUsers()
 {
-    // 
-    map<string, list<string>> followersMap = FileManager::readUsersFromFile("users.txt");
-    map<string, User*> userMap;
-    if(!followersMap.empty())
+    map<string, list<string>> userMap = FileManager::ReturnUsers("users.txt");
+    if (!userMap.empty()) // Why 
     {
-
-        for(auto const& pair : followersMap)
+        for (auto const &pair : userMap)
         {
             auto key = pair.first;
-
             auto followers = pair.second;
-            
-            userMap[key]->followers=followers;
-
+            userMap[key]->followers = followers;
         }
-    return userMap;
+    }
 }
 
 bool UserManager::IsFollowing(string followed, string follower)
 {
 
-    list<string> followers = followersMap[followed]->followers;
+    list<string> followers = userMap[followed]->followers;
 
     list<string>::iterator it;
 
