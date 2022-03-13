@@ -35,12 +35,10 @@ Packet* CommunicationManager::receivePacket(int socket) {
 }
 
 void CommunicationManager::sendNotification(std::string senderId, Packet* packet, std::list<Session *> activeSessionsList, std::map<std::string, User*> userMap) {
-    // list<string> followers = {};
     list<string> followers = userMap[senderId]->followers;
 
     for (auto const& element: activeSessionsList) {
-        if (std::find(followers.begin(), followers.end(), element->connectedUserId) != followers.end()) { // coringuei mano vai tomar no cu olha o que eu preciso fazer pra checar se tem um elemento na lista VAI TOMAR NO CU        
-            std::cout << "Found follower id: " << element->connectedUserId << " senderId: " << senderId << std::endl;
+        if (std::find(followers.begin(), followers.end(), element->connectedUserId) != followers.end()) {      
             sendPacket(*element->socket, packet);
         }
     }

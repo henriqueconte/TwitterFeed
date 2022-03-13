@@ -5,6 +5,7 @@
 #include <map>
 #include "../../shared/headers/User.hpp"
 #include "../../shared/headers/notification.hpp"
+#include <mutex>
 
 using namespace std;
 class UserManager
@@ -19,4 +20,5 @@ class UserManager
         void loadUsers();
         void addNewNotifications(string username, Notification notification);
         bool IsFollowing(string followed, string follower);
+        mutex usersMutex;
 };
