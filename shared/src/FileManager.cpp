@@ -17,7 +17,7 @@ Arquivo csv, primeiro nome é o usuário, resto seus seguidores.
 
 // CreateFile <- so instancia o arquivo e cria se n tiver
 // ReturnUsers
-map<string,list <string> > FileManager::CreateFile(string file_name)
+map<string,list <string>> FileManager::CreateFile(string file_name)
 {
     ifstream ifile;
     ifile.open("users.txt");
