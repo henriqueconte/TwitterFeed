@@ -14,16 +14,16 @@ private:
 public:
     list<std::string> followers;
 
-    map<string, Session> sessions;
+    map<string, Session*> sessions;
 
     string username;
     pthread_t threadId;
     // Aqui pode ser uma lista do tipo Notification tambem
-    list<Notification> pendingNotifications;
+    list<Notification*> pendingNotifications;
 
     User(/* args */);
     User(string username);
-    User(string username, list<string> pendingNotifications, list<string> followers);
+    User(string username, list<Notification*> pendingNotifications, list<string> followers);
 
     ~User();
 };
