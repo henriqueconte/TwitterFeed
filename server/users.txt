@@ -1,5 +1,6 @@
 pedro
 laura,joana,maria
-joana,pedro
+joana,pedro,erik
 maria
-xesquez,
+xesquez
+erik

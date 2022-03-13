@@ -160,13 +160,15 @@ void *serveClient(void *data)
 
         case Follow: {
             commManager.sendPacket(clientSocket, new Packet("Server acknowledges to have received a Follow packet.", Login));
-            
+
             std::string usersString = messagePacket->message;
 
             std::string delimiter = "|";
             std::string follower = usersString.substr(0, usersString.find(delimiter)); 
-            std::string followed = usersString.substr(follower.length() + 1, usersString.find(delimiter)); 
+            std::string followed = usersString.substr(follower.length() + 1, usersString.length()); 
+
             userManager.addFollower(followed, follower);
+
             break;
         }
 
