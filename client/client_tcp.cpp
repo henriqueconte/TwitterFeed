@@ -145,7 +145,7 @@ void *listenNotifications(void *data)
 
     Packet *notificationPacket = commManager.receivePacket(socket);
 
-    while (notificationPacket->type != Logout)
+    while (notificationPacket->type != Logout) // TODO: Only accept certain types of notification
     {
         std::cout << "Notification received: " << notificationPacket->message << std::endl;
 

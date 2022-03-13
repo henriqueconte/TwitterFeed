@@ -3,6 +3,7 @@
 #include <string>
 #include <map>
 #include <list>
+#include <algorithm>
 #include <vector>
 #include <sstream>
 #include "../headers/FileManager.hpp"
@@ -43,6 +44,7 @@ map<string, list<string>> FileManager::ReturnUsers(string file_name)
 
         while (getline(str, word, ','))
         {
+            word.erase( std::remove(word.begin(), word.end(), '\r'), word.end() ); // /r
             if (i == 0)
             {
                 list<string> followers;

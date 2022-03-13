@@ -35,13 +35,13 @@ Packet* CommunicationManager::receivePacket(int socket) {
 }
 
 void CommunicationManager::sendNotification(std::string senderId, Packet* packet, std::list<Session *> activeSessionsList, std::map<std::string, User*> userMap) {
-    list<string> followers = userMap[senderId]->followers;
+    list<string> followers = {};
+    followers = userMap[senderId]->followers;
     cout << "oi" << endl;
 
     for (auto const& element: activeSessionsList) {
         cout << "conId" << element->connectedUserId << endl;
-        if (std::find(followers.begin(), followers.end(), element->connectedUserId) != followers.end()) { // coringuei mano vai tomar no cu olha o que eu preciso fazer pra checar se tem um elemento na lista VAI TOMAR NO CU
-            
+        if (std::find(followers.begin(), followers.end(), element->connectedUserId) != followers.end()) { // coringuei mano vai tomar no cu olha o que eu preciso fazer pra checar se tem um elemento na lista VAI TOMAR NO CU        
             std::cout << "Found follower id: " << element->connectedUserId << " senderId: " << senderId << std::endl;
             sendPacket(*element->socket, packet);
             receivePacket(*element->socket);
