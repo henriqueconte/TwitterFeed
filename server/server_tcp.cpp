@@ -20,6 +20,8 @@ void *authenticateClient(void *data);
 SessionManager sessionManager;
 CommunicationManager commManager;
 UserManager userManager;
+FileManager fileManager;
+
 std::string fileName = "users.txt";
 
 int main(int argc, char *argv[])
@@ -136,9 +138,8 @@ void *serveClient(void *data)
         Packet *messagePacket = commManager.receivePacket(clientSocket);
 
         // Handle command type accordingly
-        switch (messagePacket->type)
-        {
-        case Login: // TODO: Handle login here
+        switch (messagePacket->type) {
+        case Login:  // TODO: Handle login here
             commManager.sendPacket(clientSocket, new Packet("Your login message was received.", Login));
 
             // Receives acknowledge packet from client to server
@@ -156,9 +157,21 @@ void *serveClient(void *data)
             // Receives acknowledge packet from client to server
             messagePacket = commManager.receivePacket(clientSocket);
             break;
-        case Follow:
-            //TODO: Actually implement follow
+
+        case Follow: {
+            commManager.sendPacket(clientSocket, new Packet("Server acknowledges to have received a Follow packet.", Login));
+            
+            std::string usersString = messagePacket->message;
+
+            std::string delimiter = "|";
+            std::string followed = usersString.substr(0, usersString.find(delimiter)); 
+            std::string follower = usersString.substr(followed.length() + 1, usersString.find(delimiter)); 
+
+            fileManager.WriteToFile(fileName, followed, follower);
+
             break;
+        }
+
         case Logout:
             std::cout << "User logging out: " << messagePacket->message << std::endl;
             sessionManager.closeSession(messagePacket->message);

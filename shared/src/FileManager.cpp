@@ -18,11 +18,11 @@ Arquivo csv, primeiro nome é o usuário, resto seus seguidores.
 
 // CreateFile <- so instancia o arquivo e cria se n tiver
 // ReturnUsers
-map<string,list <string>> FileManager::CreateFile(string file_name)
+map<string,list <string> > FileManager::CreateFile(string file_name)
 {
     ifstream ifile;
     ifile.open("users.txt");
-    map<string, list<string>> followersMap;
+    map<string, list<string> > followersMap;
     if (!ifile)
     {
         ofstream MyFile(file_name);
@@ -30,11 +30,11 @@ map<string,list <string>> FileManager::CreateFile(string file_name)
     }
 }
 
-map<string, list<string>> FileManager::ReturnUsers(string file_name)
+map<string, list<string> > FileManager::ReturnUsers(string file_name)
 {
     ifstream MyReadFile(file_name);
     string line, word, key;
-    map<string, list<string>> followersMap;
+    map<string, list<string> > followersMap;
 
     int i;
     while (getline(MyReadFile, line))

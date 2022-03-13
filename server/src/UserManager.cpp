@@ -33,7 +33,7 @@ list<Notification> UserManager::getNotifications(string username)
 void UserManager::loadUsers()
 {
     FileManager fileManager;
-    map<string, list<string>> followersMap = fileManager.ReturnUsers("users.txt");
+    map<string, list<string> > followersMap = fileManager.ReturnUsers("users.txt");
 
     if (!followersMap.empty()) // Why 
     {   

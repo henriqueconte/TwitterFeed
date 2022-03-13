@@ -15,6 +15,7 @@
 #include <map>
 #include "../shared/headers/packet.hpp"
 #include "../shared/headers/CommunicationManager.hpp"
+#include "../shared/headers/FileManager.hpp"
 
 #define PORT 4000
 #define SESSIONLENGTH 8
@@ -26,7 +27,9 @@ void connect(int socket, hostent *server);
 int sockfd;
 std::string sessionId;
 std::mutex clientMutex;
+std::string fileName = "../server/users.txt";
 
+FileManager fileManager;
 CommunicationManager commManager;
 
 // CREATE LISTENER
@@ -94,6 +97,7 @@ int main(int argc, char *argv[])
             if (commandType == "send")
             {
 
+                inputString.erase(0, 5);
                 // Sends message packet from client to server
                 commManager.sendPacket(sockfd, new Packet(inputString, Message));
 
@@ -102,7 +106,8 @@ int main(int argc, char *argv[])
             }
             else if (commandType == "follow")
             {
-                // TODO: Implement follow command
+                inputString.erase(0, 7);
+                commManager.sendPacket(sockfd, new Packet(username + "|" + inputString, Follow));
             }
             else
             {

@@ -35,8 +35,8 @@ Packet* CommunicationManager::receivePacket(int socket) {
 }
 
 void CommunicationManager::sendNotification(std::string senderId, Packet* packet, std::list<Session *> activeSessionsList, std::map<std::string, User*> userMap) {
-    list<string> followers = {};
-    followers = userMap[senderId]->followers;
+    // list<string> followers = {};
+    list<string> followers = userMap[senderId]->followers;
     cout << "oi" << endl;
 
     for (auto const& element: activeSessionsList) {
