@@ -7,7 +7,7 @@
 class SessionManager {
     public:
         std::list<Session *> activeSessionsList;
-        std::string tryLogin(std::string username);
+        Session* tryLogin(std::string username);
         void closeSession(std::string sessionId);
     
     private:

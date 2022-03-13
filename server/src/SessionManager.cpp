@@ -12,10 +12,11 @@
 
 using namespace std;
 
-std::string SessionManager::tryLogin(std::string username) {
+Session* SessionManager::tryLogin(std::string username) {
     // Verifies how many sessions are active with the same username
     int activeUserSessionCount = 0;
     // TODO Persistência de dados: buscar dados salvo na base de dados para verificar as sessões ativas
+    // TODO (Pedro): Use map instead of a list to handle active sessions
     for (auto const& element: activeSessionsList) {
         if (element->connectedUserId == username) {
             activeUserSessionCount++;
@@ -23,22 +24,24 @@ std::string SessionManager::tryLogin(std::string username) {
     }
 
     if (activeUserSessionCount < 2) {
-        Session* session = new Session(generateSessionId(), username);
+        Session* session = new Session(generateSessionId(), username, Open);
         cout << "Sessão criada com sucesso para o usuário: " << session->connectedUserId << ". Id da sessão: " << session->sessionId << " \n";
         // TODO Persistência de dados: salvar sessão criada em uma base de dados 
         activeSessionsList.push_back(session);
         cout << "Autenticação do usuário " << username << " realizada com sucesso." << endl;
-        return session->sessionId;
+
+        return session;
     } else {
         cout << "User has already too many sessions! Please close one of them before logging in in another machine." << endl;
-        return "Authentication failed";
+        
+        return new Session("", "", Failed);
     }
 }
 
 void SessionManager::closeSession(std::string sessionId) {
     int initialNumberOfSessions = activeSessionsList.size();
 
-    for (auto i=activeSessionsList.begin(); i != activeSessionsList.end(); i++) {
+    for (auto i = activeSessionsList.begin(); i != activeSessionsList.end(); i++) {
         if ((*i)->sessionId == sessionId) {
             i = activeSessionsList.erase(i);
             cout << "Session with id " << sessionId << " closed with success." << endl;
@@ -61,7 +64,7 @@ string SessionManager::generateSessionId() {
     tmp_s.reserve(idLength);
 
     for (int i = 0; i < idLength; ++i) {
-        tmp_s += alphanum[rand() % (sizeof(alphanum) - 1)];
+        tmp_s += alphanum[rand() % (sizeof(alphanum) - 1)]; // TODO: Prevent the repetition of session ids?? (Low priority)
     }
     
     return tmp_s;

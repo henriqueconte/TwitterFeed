@@ -10,23 +10,34 @@
 #include <iostream>
 #include <signal.h>
 #include <unistd.h>
-
+#include <thread>
+#include <mutex>
+#include <map>
 #include "../shared/headers/packet.hpp"
-#include "../shared/headers/CommunicationManager.hpp" 
+#include "../shared/headers/CommunicationManager.hpp"
+#include "../shared/headers/FileManager.hpp"
 
 #define PORT 4000
 #define SESSIONLENGTH 8
 
+void *listenNotifications(void *data);
 void disconnect(int socket);
+void connect(int socket, hostent *server);
 
 int sockfd;
 std::string sessionId;
+std::mutex clientMutex;
+std::string fileName = "../server/users.txt";
 
+FileManager fileManager;
 CommunicationManager commManager;
 
-int main(int argc, char *argv[]) {
+// CREATE LISTENER
 
-    // Responsible for handling interruptions like CTRL C.
+int main(int argc, char *argv[])
+{
+
+    // Responsible for handling interruptions like CTRL + C.
     struct sigaction sigIntHandler;
     sigIntHandler.sa_handler = disconnect;
     sigemptyset(&sigIntHandler.sa_mask);
@@ -34,69 +45,72 @@ int main(int argc, char *argv[]) {
     sigaction(SIGINT, &sigIntHandler, NULL);
 
     int n;
-    struct sockaddr_in serv_addr;
+    // struct sockaddr_in serv_addr;
     struct hostent *server;
     std::string username;
     char buffer[256];
 
-    if (argc < 3) {
-        fprintf(stderr,"usage %s hostname username\n", argv[0]);
+    if (argc < 3)
+    {
+        fprintf(stderr, "usage %s hostname username\n", argv[0]);
         exit(0);
     }
-    
+
     server = gethostbyname(argv[1]);
     username = argv[2];
 
-    if (server == NULL) {
-        fprintf(stderr,"ERROR, no such host\n");
+    if (server == NULL)
+    {
+        fprintf(stderr, "ERROR, no such host\n");
         exit(0);
     }
 
-    if ((sockfd = socket(AF_INET, SOCK_STREAM, 0)) == -1) 
+    if ((sockfd = socket(AF_INET, SOCK_STREAM, 0)) == -1)
         printf("ERROR opening socket\n");
 
-    serv_addr.sin_family = AF_INET;     
-    serv_addr.sin_port = htons(PORT);    
-    serv_addr.sin_addr = *((struct in_addr *)server->h_addr);
-    bzero(&(serv_addr.sin_zero), 8);
-
-    if (connect(sockfd,(struct sockaddr *) &serv_addr,sizeof(serv_addr)) < 0) {
-        printf("ERROR connecting\n");
-        close(sockfd);
-        exit(0);
-    }             
+    connect(sockfd, server);
 
     commManager.sendPacket(sockfd, new Packet(username, Login));
-    Packet* loginPacket = commManager.receivePacket(sockfd);
+    Packet *loginPacket = commManager.receivePacket(sockfd);
 
-    std::cout << "Authentication result: " << loginPacket->message << std::endl << "\n";
+    std::cout << "Authentication result: " << loginPacket->message << std::endl
+              << "\n";
 
-    if (loginPacket->length == SESSIONLENGTH) {
+    if (loginPacket->length == SESSIONLENGTH)
+    {
         commManager.sendPacket(sockfd, new Packet("Client logged in successfully!.", Login));
         sessionId = loginPacket->message;
-        while(true) {
+
+        // auto listenerThread = std::thread(listenNotifications, *socketCopy);
+        pthread_t notificationThread;
+        int *socketCopy = (int *)malloc(sizeof(int));
+        *socketCopy = sockfd;
+        pthread_create(&notificationThread, NULL, &listenNotifications, (void *)socketCopy);
+
+        while (true)
+        {
             std::cout << "Enter the command: " << std::endl;
             std::string inputString;
             getline(std::cin, inputString);
             std::string commandType = inputString.substr(0, inputString.find(" "));
-            
-            if (commandType == "send") {
 
+            if (commandType == "send")
+            {
+
+                inputString.erase(0, 5);
                 // Sends message packet from client to server
                 commManager.sendPacket(sockfd, new Packet(inputString, Message));
 
-                // Receives acknowledge packet from server to client
-                commManager.receivePacket(sockfd);
-
-                // Receives reply packet from server to client
-                commManager.receivePacket(sockfd);
-                
                 // Sends acknowledge packet from client to server
-                commManager.sendPacket(sockfd, new Packet("Client acknowledges the server reply.", Message));
-
-            } else if (commandType == "follow") {
-                // TODO: Implement follow command
-            } else {
+                commManager.sendPacket(sockfd, new Packet("Client acknowledges the server's response.", Message));
+            }
+            else if (commandType == "follow")
+            {
+                inputString.erase(0, 7);
+                commManager.sendPacket(sockfd, new Packet(username + "|" + inputString, Follow));
+            }
+            else
+            {
                 std::cout << "Command not recognized. Please try again." << std::endl;
             }
         }
@@ -104,10 +118,42 @@ int main(int argc, char *argv[]) {
     return 0;
 }
 
-void disconnect(int signal) {
+void connect(int socket, hostent *server)
+{
+    struct sockaddr_in serv_addr;
+    serv_addr.sin_family = AF_INET;
+    serv_addr.sin_port = htons(PORT);
+    serv_addr.sin_addr = *((struct in_addr *)server->h_addr);
+    bzero(&(serv_addr.sin_zero), 8);
+
+    if (connect(socket, (struct sockaddr *)&serv_addr, sizeof(serv_addr)) < 0)
+    {
+        printf("ERROR connecting\n");
+        close(socket);
+        exit(0);
+    }
+}
+
+void disconnect(int signal)
+{
     std::cout << "Closing the session... " << std::endl;
     commManager.sendPacket(sockfd, new Packet(sessionId, Logout));
-    commManager.receivePacket(sockfd);
+    // commManager.receivePacket(sockfd);
     close(sockfd);
     exit(1);
+}
+
+void *listenNotifications(void *data)
+{
+    int *socketCopy = (int *)data;
+    int socket = *socketCopy;
+
+    Packet *notificationPacket = commManager.receivePacket(socket);
+
+    while (notificationPacket->type != Logout) // TODO: Only accept certain types of notification
+    {
+        std::cout << "Notification received: " << notificationPacket->message << std::endl;
+
+        commManager.receivePacket(socket);
+    }
 }
