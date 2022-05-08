@@ -295,6 +295,14 @@ void startElection(ServerRing* ring) {
             ring->primaryPort = ring->ringPorts[ring->nextIndex];
             return;
         }
+
+        int writeResult = write(sockfd, new Packet(to_string(ring->nextIndex), Election), sizeof(Packet));
+        if (writeResult < 0) {
+            cout << "Error sending election message" << endl;
+            exit(0);
+        }
+        close(sockfd);
+        
     } else {
         // If it is already in an election, can just unlock it again
         pthread_mutex_unlock(&ring->electionMutex);

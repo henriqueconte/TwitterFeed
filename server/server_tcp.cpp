@@ -213,7 +213,7 @@ void *serveClient(void *data) {
 
 void serverHeartbeat(int socket) {
     while (true) {
-        std::cout << "Received a hearbeat on socket: " << socket << std::endl;
+        std::cout << "Received a heartbeat on socket: " << socket << std::endl;
         sleep(1);
         int sendStatusCode = write(socket, new Packet("HEARTBEAT RECEIVED", Heartbeat), sizeof(Packet));
         if (sendStatusCode < 0) {
