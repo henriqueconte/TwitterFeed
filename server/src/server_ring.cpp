@@ -19,6 +19,7 @@ char *ringAddress = "127.0.0.1";
 
 using namespace std;
 void heartbeat(void *ringData);
+void startElection(ServerRing* ring);
 
 ServerRing* ServerRing::initServerRing() {
     ServerRing *ring = (ServerRing *)malloc(sizeof(ServerRing));
@@ -39,7 +40,9 @@ ServerRing* ServerRing::initServerRing() {
 
     ring->isPrimary = false;
     ring->currentIndex = -1; // We start incrementing it
+    ring->isInElection = false;
     ring->ringAddress = "127.0.0.1";
+    pthread_mutex_init(&ring->electionMutex, NULL);
     // ring->ringPorts = { 4000, 4001, 4002, 4003, 4004, 4005, 4006, 4007, 4008, 4009 };
     // ring->ringAddress = ringAddress;
     // ring->ringPorts = ringPorts;
@@ -186,6 +189,7 @@ int ServerRing::getNextServerRingIndex(ServerRing *ring, int currentIndex) {
 void heartbeat(void *ringData) {
     ServerRing *ring = (ServerRing *)ringData;
     int socketReuseOption = 1;
+    pthread_t electionThread;
 
     // Creating and configuring sockfd for the keepalive
     if ((ring->heartbeatSocket = socket(AF_INET, SOCK_STREAM, 0)) == -1) {
@@ -222,20 +226,19 @@ void heartbeat(void *ringData) {
         sleep(heartbeatSeconds);
         cout << "Sending heartbeat to " << ring->primaryPort << endl;
 
-        // NOTIFICATION notification = {.type = NOTIFICATION_TYPE__KEEPALIVE}, read_notification;
-
-        // int bytes_wrote = send(ring->keepalive_fd, (void *)&notification, sizeof(NOTIFICATION), MSG_NOSIGNAL);
-        // commManager.sendPacket(ring->heartbeatSocket, new Packet("HEARTBEAT", Heartbeat));
         int successCodeWrite = write(ring->heartbeatSocket, new Packet("HEARTBEAT", Heartbeat), sizeof(Packet));
 
         if (successCodeWrite < 0) {
             // Leader is not active
             if (errno == EPIPE) {
                 cout << "Leader is disconnected! Failed to send heartbeat" << endl;
+                // pthread_create(&electionThread, NULL, (void *(*)(void *)) & startElection, (void *)ring);
+                startElection(ring);
                 return;
             }
             cout << "Error sending heartbeat: " << errno << endl;
-            exit(0);
+            // return;
+            // exit(0);
         }
 
         Packet *receivedPacket = new Packet; 
@@ -244,13 +247,94 @@ void heartbeat(void *ringData) {
         if (successCodeRead < 0) {
             // Connection to master timed out, need to start an election
             if (errno == EWOULDBLOCK || errno == EAGAIN) {
-                // TODO: START ELECTION IN NEW THREAD
                 cout << "Failed to receive heartbeat from client, maybe it died." << endl;
-                // return;
+                // pthread_create(&electionThread, NULL, (void *(*)(void *)) & startElection, (void *)ring);
+                startElection(ring);
+                return;
             }
             cout << "Error receiving heartbeat" << endl;
-            exit(0);
+            // return;
+            // exit(0);
         }
     }
- }
+}
+
+void startElection(ServerRing* ring) {
+    cout << "ENTERED ELECTION METHOD" << endl;
+
+    // Creating and configuring sockfd for the keepalive
+    int sockfd;
+    int socketReuseOption = 1;
+
+    if ((sockfd = socket(AF_INET, SOCK_STREAM, 0)) == -1) {
+        cout << "Error opening election socket" << endl;
+        exit(0);
+    }
+
+    cout << "STARTING ELECTION!" << endl;
+    setsockopt(sockfd, SOL_SOCKET, SO_REUSEADDR, &socketReuseOption, sizeof(int));
+
+    cout << "STARTING ELECTION!" << endl;
+
+    pthread_mutex_lock(&ring->electionMutex);
+
+    cout << "STARTING ELECTION!" << endl;
+    if (!ring->isInElection) {
+        ring->isInElection = true;
+        pthread_mutex_unlock(&ring->electionMutex);
+
+        // logger_info("Inside election start, preparing it...\n");
+
+        struct sockaddr_in next_addr;
+        next_addr.sin_family = AF_INET;
+        bzero(&(next_addr.sin_zero), 8);
+
+        int connectionStatus;
+
+        ring->nextIndex = ring->currentIndex;
+        do {
+            ring->nextIndex = ring->getNextServerRingIndex(ring, ring->nextIndex);
+            next_addr.sin_port = htons(ring->ringPorts[ring->nextIndex]);
+            struct hostent *in_addr = gethostbyname("127.0.0.1");
+            next_addr.sin_addr = *((struct in_addr *)in_addr->h_addr);
+            cout << "Let's try to connect to " << ring->ringPorts[ring->nextIndex] << endl;
+
+            connectionStatus = connect(sockfd, (struct sockaddr *)&next_addr, sizeof(next_addr));
+            cout << "Result of the connection attempt: " << endl;
+        } while (ring->nextIndex != ring->currentIndex && connectionStatus < 0);
+
+        // Went all the list around and couldn't connect to anyone, so I'm the primary
+        if (ring->nextIndex == ring->currentIndex) {
+            // logger_info("Couldn't find any other option connection, so I must be the only server\n");
+            // logger_info("I'm the new leader! 👑\n");
+            cout << "Didn't find any other servers, so I'm the new leader!" << endl;
+            ring->isPrimary = true;
+
+            // Uses mutex because we don't know if it counts as a single memory access or two because of the pointer
+            pthread_mutex_lock(&ring->electionMutex);
+            ring->isInElection = false;
+            pthread_mutex_unlock(&ring->electionMutex);
+
+            ring->primaryPort = ring->ringPorts[ring->nextIndex];
+            return;
+        }
+
+        // // Need to ask who is the primary
+        // logger_info("Connected with follower in port %d\n", ring->server_ring_ports[ring->next_index]);
+        // logger_info("Will send an election message\n");
+
+        // NOTIFICATION notification = {.type = NOTIFICATION_TYPE__ELECTION, .data = ring->self_index};
+        // int bytes_wrote = write(sockfd, (void *)&notification, sizeof(NOTIFICATION));
+        // if (bytes_wrote < 0)
+        // {
+        //     logger_error("Error when trying  to send election message.\n");
+        //     exit(ERROR_LOOKING_FOR_LEADER);
+        // }
+
+        // close(sockfd);
+    } else {
+        // If it is already in an election, can just unlock it again
+        pthread_mutex_unlock(&ring->electionMutex);
+    }
+}
 
