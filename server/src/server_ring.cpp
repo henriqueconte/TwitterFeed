@@ -75,7 +75,6 @@ void ServerRing::connectServerRing(ServerRing *ring) {
 
      // Configuring this server connection with his next node in the list
     connectNextServerToRing(ring);
-    std::cout << "Iniciou??" << std::endl;
 
      // Start a thread for the keep alive, to know when primary is down
      if (ring->isPrimary == false) {
@@ -124,26 +123,16 @@ void ServerRing::connectNextServerToRing(ServerRing *ring) {
     next_addr.sin_family = AF_INET;
     bzero(&(next_addr.sin_zero), 8);
 
-    std::cout << "Iniciou?? 1 " << std::endl;
     ring->nextIndex = ring->currentIndex;
-    std::cout << "Iniciou?? 2" << std::endl;
     ring->nextIndex = getNextServerRingIndex(ring, ring->nextIndex);
-    std::cout << "Iniciou?? 3" << std::endl;
     next_addr.sin_port = htons(ring->ringPorts[ring->nextIndex]);
-    std::cout << "Iniciou?? 4 Ring address: " << ring->ringAddress << std::endl;
     struct hostent *in_addr = gethostbyname(ring->ringAddress);
-    std::cout << "Iniciou?? 5" << std::endl;
     next_addr.sin_addr = *((struct in_addr *)in_addr->h_addr);
 
-    std::cout << "Iniciou?? 6 " << std::endl;
     while (ring->nextIndex != ring->currentIndex && (connect(ring->nextSocket, (struct sockaddr *)&next_addr, sizeof(next_addr)) < 0)) {
         ring->nextIndex = getNextServerRingIndex(ring, ring->nextIndex);
-        std::cout << "Iniciou?? 7 Next socket: " << ring->nextSocket << std::endl;
-
-        std::cout << "Current index: " << ring->currentIndex << " Next index: " << ring->nextIndex << endl;
         next_addr.sin_port = htons(ring->ringPorts[ring->nextIndex]);
         struct hostent *in_addr = gethostbyname(ring->ringAddress);
-        std::cout << "Iniciou?? 8" << std::endl;
         next_addr.sin_addr = *((struct in_addr *)in_addr->h_addr);
     }
 
@@ -213,7 +202,7 @@ void heartbeat(void *ringData) {
     bzero(&(heartbeatAddress.sin_zero), 8);
 
     heartbeatAddress.sin_port = htons(ring->primaryPort);
-    struct hostent *in_addr = gethostbyname("127.0.0.1"); // TODO: Change something so that we know how to connect to it. Probably we should make the server send their ID and not their port
+    struct hostent *in_addr = gethostbyname("127.0.0.1");
     heartbeatAddress.sin_addr = *((struct in_addr *)in_addr->h_addr);
 
     if (connect(ring->heartbeatSocket, (struct sockaddr *)&heartbeatAddress, sizeof(heartbeatAddress)) < 0) {
@@ -232,7 +221,6 @@ void heartbeat(void *ringData) {
             // Leader is not active
             if (errno == EPIPE) {
                 cout << "Leader is disconnected! Failed to send heartbeat" << endl;
-                // pthread_create(&electionThread, NULL, (void *(*)(void *)) & startElection, (void *)ring);
                 startElection(ring);
                 return;
             }
@@ -248,13 +236,11 @@ void heartbeat(void *ringData) {
             // Connection to master timed out, need to start an election
             if (errno == EWOULDBLOCK || errno == EAGAIN) {
                 cout << "Failed to receive heartbeat from client, maybe it died." << endl;
-                // pthread_create(&electionThread, NULL, (void *(*)(void *)) & startElection, (void *)ring);
                 startElection(ring);
                 return;
             }
             cout << "Error receiving heartbeat" << endl;
-            // return;
-            // exit(0);
+            return;
         }
     }
 }
@@ -262,7 +248,6 @@ void heartbeat(void *ringData) {
 void startElection(ServerRing* ring) {
     cout << "ENTERED ELECTION METHOD" << endl;
 
-    // Creating and configuring sockfd for the keepalive
     int sockfd;
     int socketReuseOption = 1;
 
@@ -271,19 +256,13 @@ void startElection(ServerRing* ring) {
         exit(0);
     }
 
-    cout << "STARTING ELECTION!" << endl;
     setsockopt(sockfd, SOL_SOCKET, SO_REUSEADDR, &socketReuseOption, sizeof(int));
-
-    cout << "STARTING ELECTION!" << endl;
 
     pthread_mutex_lock(&ring->electionMutex);
 
-    cout << "STARTING ELECTION!" << endl;
     if (!ring->isInElection) {
         ring->isInElection = true;
         pthread_mutex_unlock(&ring->electionMutex);
-
-        // logger_info("Inside election start, preparing it...\n");
 
         struct sockaddr_in next_addr;
         next_addr.sin_family = AF_INET;
@@ -303,10 +282,8 @@ void startElection(ServerRing* ring) {
             cout << "Result of the connection attempt: " << endl;
         } while (ring->nextIndex != ring->currentIndex && connectionStatus < 0);
 
-        // Went all the list around and couldn't connect to anyone, so I'm the primary
+        // Couldn't connect to anyone, so this is the primary server
         if (ring->nextIndex == ring->currentIndex) {
-            // logger_info("Couldn't find any other option connection, so I must be the only server\n");
-            // logger_info("I'm the new leader! 👑\n");
             cout << "Didn't find any other servers, so I'm the new leader!" << endl;
             ring->isPrimary = true;
 
@@ -318,20 +295,6 @@ void startElection(ServerRing* ring) {
             ring->primaryPort = ring->ringPorts[ring->nextIndex];
             return;
         }
-
-        // // Need to ask who is the primary
-        // logger_info("Connected with follower in port %d\n", ring->server_ring_ports[ring->next_index]);
-        // logger_info("Will send an election message\n");
-
-        // NOTIFICATION notification = {.type = NOTIFICATION_TYPE__ELECTION, .data = ring->self_index};
-        // int bytes_wrote = write(sockfd, (void *)&notification, sizeof(NOTIFICATION));
-        // if (bytes_wrote < 0)
-        // {
-        //     logger_error("Error when trying  to send election message.\n");
-        //     exit(ERROR_LOOKING_FOR_LEADER);
-        // }
-
-        // close(sockfd);
     } else {
         // If it is already in an election, can just unlock it again
         pthread_mutex_unlock(&ring->electionMutex);

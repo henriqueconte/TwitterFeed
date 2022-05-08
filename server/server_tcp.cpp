@@ -20,7 +20,6 @@
 void *serveClient(void *data);
 void *authenticateClient(void *data);
 void serverHeartbeat(int socket);
-// void handle_signals(void);
 
 SessionManager sessionManager;
 CommunicationManager commManager;
@@ -38,7 +37,6 @@ int main(int argc, char *argv[]) {
     socklen_t clilen;
     struct sockaddr_in serv_addr, cli_addr;
 
-    // handle_signals();
     userManager.loadUsers();
 
     clilen = sizeof(struct sockaddr_in);
@@ -52,15 +50,10 @@ int main(int argc, char *argv[]) {
         // newsockfd = accept(sockfd, (struct sockaddr *)&cli_addr, &clilen);
         newsockfd = accept(serverRing->currentSocket, (struct sockaddr *) &cli_addr, &clilen);
 
-        if (newsockfd == -1)
-        {
+        if (newsockfd == -1) {
             printf("ERROR on accept");
             continue;
         }
-
-        // Adding two sessions with username jose to test scenarios with two active sessions. Remove it later.
-        // sessionManager.tryLogin("jose");
-        // sessionManager.tryLogin("jose");
 
         pthread_t authThread;
         std::cout << "Created authentication thread." << std::endl;
@@ -76,14 +69,12 @@ int main(int argc, char *argv[]) {
         session->socket = socketCopy;
 
         // If the session is open, the authentication was a success.
-        if (session->sessionStatus == Open)
-        {
+        if (session->sessionStatus == Open) {
             userManager.addUser(session->connectedUserId);
             pthread_t serviceThread;
             std::cout << "Created serving thread." << std::endl;
             pthread_create(&serviceThread, NULL, &serveClient, (void *)session);
         }
-        // TALVEZ TENHA QUE INICIAR LEITURA DE NOTIFICAÇÕES AQUI!
     }
 
     close(sockfd);
@@ -110,7 +101,7 @@ void *authenticateClient(void *data) {
         isServerConnection = true;
         *responsePacket = Packet(to_string(serverRing->primaryPort), LeaderFound);
         commManager.sendPacket(clientSocket, responsePacket);
-        return socketCopy; // Maybe change to serverRing->primaryPort
+        return socketCopy;
     } else if (receivedPacket->type == Heartbeat) {
         serverHeartbeat(clientSocket);
     } else {
@@ -204,7 +195,6 @@ void *serveClient(void *data) {
             break;
         
         case Heartbeat:
-
             if (serverRing->isPrimary == false) {
                 cout << "Shouldn't receive hearbeat from not primary" << endl;
             }
@@ -223,18 +213,15 @@ void *serveClient(void *data) {
 
 void serverHeartbeat(int socket) {
     while (true) {
-        std::cout << "Entered server hearbeat method. Socket: " << socket << std::endl;
+        std::cout << "Received a hearbeat on socket: " << socket << std::endl;
         sleep(1);
         int sendStatusCode = write(socket, new Packet("HEARTBEAT RECEIVED", Heartbeat), sizeof(Packet));
         if (sendStatusCode < 0) {
-            if (errno == EPIPE)
-            {
-            //  logger_info("[Socket %d] When sending keepalive to client. Must be dead. Stopping answering keep alives\n", sockfd);
-            cout << "Error to send heartbeat to client, maybe it's dead. The socket is: " << socket << endl;
-            return;
+            if (errno == EPIPE) {
+                cout << "Error to send heartbeat to client, maybe it's dead. The socket is: " << socket << endl;
+                return;
             }
 
-            //  logger_error("[Socket %d] When sending keepalive to client. Not an EPIPE. Will retry to send...\n", sockfd);
             cout << "Error sending heartbeat to client, it will try again. Socket: " << socket << endl;
             continue;
         }
@@ -247,32 +234,3 @@ void serverHeartbeat(int socket) {
         }
     }
 }
-
-// void sigint_handler(int _sigint) {
-//     if (receivedSigint == false) {
-//         receivedSigint = true;
-//         cout << "Received SIGINT. Time to close the server." << endl;
-//         // logger_warn("SIGINT received, closing descriptors and finishing...\n");
-//         // cleanup(0);
-//         // close(*serverSocketCopy);
-//     }
-// }
-
-// void handle_signals(void) {
-//     struct sigaction sigintAction;
-//     sigintAction.sa_handler = sigint_handler;
-//     sigaction(SIGINT, &sigintAction, NULL);
-//     sigaction(SIGINT, &sigintAction, NULL); // Activating it twice works, so don't remove this ¯\_(ツ)_/¯
-
-//     struct sigaction sigint_ignore;
-//     sigintAction.sa_handler = SIG_IGN;
-//     sigaction(SIGPIPE, &sigintAction, NULL);
-//     sigaction(SIGPIPE, &sigintAction, NULL);
-
-//     // Create a different thread to handle CTRL + D
-//     // pthread_t *thread = (pthread_t *)malloc(sizeof(pthread_t));
-//     // pthread_create(thread, NULL, (void *(*)(void *)) & handle_eof, (void *)NULL);
-//     // logger_debug("Created new thread to handle EOF detection\n");
-
-//     // chained_list_append_end(chained_list_threads, (void *)thread);
-// }
