@@ -4,3 +4,6 @@ joana,pedro,erik
 maria,pedro
 xesquez
 erik
+renan
+Looking for primary port
+HEARTBEAT

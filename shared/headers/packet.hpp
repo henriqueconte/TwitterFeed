@@ -5,7 +5,7 @@
 
 #define BUFFER_LENGTH 256
 
-enum PacketType { Login, Message, Follow, Logout };
+enum PacketType { Message, Login, Follow, Logout, LeaderDiscovery, LeaderFound, Heartbeat };
 
 class Packet {
     public:

@@ -96,6 +96,7 @@
         "xtr1common": "cpp",
         "xtree": "cpp",
         "xutility": "cpp",
-        "__tree": "cpp"
+        "__tree": "cpp",
+        "variant": "cpp"
     }
 }

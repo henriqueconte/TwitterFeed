@@ -2,6 +2,8 @@
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
+#include <signal.h>
+#include <cstdio>
 #include <sys/types.h>
 #include <sys/socket.h>
 #include <netinet/in.h>
@@ -10,46 +12,46 @@
 #include "headers/SessionManager.hpp"
 #include "headers/UserManager.hpp"
 #include "../shared/headers/FileManager.hpp"
+#include "headers/server_ring.hpp"
 
 #define PORT 4000
 #include <iostream>
 
 void *serveClient(void *data);
 void *authenticateClient(void *data);
+void serverHeartbeat(int socket);
+// void handle_signals(void);
 
 SessionManager sessionManager;
 CommunicationManager commManager;
 UserManager userManager;
+ServerRing *serverRing;
 
 std::string fileName = "users.txt";
+int portNumber = PORT;
+bool isServerConnection = false;
+bool receivedSigint = false;
+int *serverSocketCopy;
 
-int main(int argc, char *argv[])
-{
+int main(int argc, char *argv[]) {
     int sockfd, newsockfd, n;
     socklen_t clilen;
     struct sockaddr_in serv_addr, cli_addr;
 
+    // handle_signals();
     userManager.loadUsers();
 
-    if ((sockfd = socket(AF_INET, SOCK_STREAM, 0)) == -1)
-        printf("ERROR opening socket");
-
-    serv_addr.sin_family = AF_INET;
-    serv_addr.sin_port = htons(PORT);
-    serv_addr.sin_addr.s_addr = INADDR_ANY;
-
-    bzero(&(serv_addr.sin_zero), 8);
-
-    if (bind(sockfd, (struct sockaddr *)&serv_addr, sizeof(serv_addr)) < 0)
-        printf("ERROR on binding");
-
-    // Allows 5 clients at the same time
-    listen(sockfd, 25);
-
     clilen = sizeof(struct sockaddr_in);
-    while (true)
-    {
-        newsockfd = accept(sockfd, (struct sockaddr *)&cli_addr, &clilen);
+    
+    serverRing = serverRing->initServerRing();
+    serverRing->connectServerRing(serverRing);
+
+    serverSocketCopy = &sockfd;
+
+    while (true) {
+        // newsockfd = accept(sockfd, (struct sockaddr *)&cli_addr, &clilen);
+        newsockfd = accept(serverRing->currentSocket, (struct sockaddr *) &cli_addr, &clilen);
+
         if (newsockfd == -1)
         {
             printf("ERROR on accept");
@@ -88,8 +90,7 @@ int main(int argc, char *argv[])
     return 0;
 }
 
-void *authenticateClient(void *data)
-{
+void *authenticateClient(void *data) {
     int *socketCopy = (int *)data;
     int clientSocket = *socketCopy;
 
@@ -99,36 +100,50 @@ void *authenticateClient(void *data)
     Session *session = new Session;
 
     int readResult = read(clientSocket, receivedPacket, sizeof(Packet));
-    if (readResult < 0)
-    {
+    if (readResult < 0) {
         std::cout << "Failed to read authentication socket." << std::endl;
         *responsePacket = Packet("Failed to read authentication socket.", Login);
     }
-    else
-    {
+
+    if (receivedPacket->type == LeaderDiscovery) {
+        std::cout << "Received Leader Discovery request. Message: " << receivedPacket->message << std::endl;
+        isServerConnection = true;
+        *responsePacket = Packet(to_string(serverRing->primaryPort), LeaderFound);
+        commManager.sendPacket(clientSocket, responsePacket);
+        return socketCopy; // Maybe change to serverRing->primaryPort
+
+    } else if (receivedPacket->type == Heartbeat) {
+        return socketCopy;
+    } else {
         std::cout << "Received data to authenticate. User login: " << receivedPacket->message << std::endl;
+        isServerConnection = false;
         session = sessionManager.tryLogin(receivedPacket->message);
-        if (session->sessionStatus == Failed)
-        {
+        if (session->sessionStatus == Failed) {
             *responsePacket = Packet("Login failed. Try closing one of the open sessions.", Login);
         }
-        else
-        {
+        else {
             *responsePacket = Packet(session->sessionId, Login);
         }
+
+        std::cout << "Sending login response packet to client. Response: " << responsePacket->message << std::endl;
+        commManager.sendPacket(clientSocket, new Packet(responsePacket->message, Login));
+        commManager.receivePacket(clientSocket);
+
+        return session;
     }
-
-    std::cout << "Sending login response packet to client. Response: " << responsePacket->message << std::endl;
-    commManager.sendPacket(clientSocket, new Packet(responsePacket->message, Login));
-    commManager.receivePacket(clientSocket);
-
-    return session;
 }
 
-void *serveClient(void *data)
-{
-    Session *session = (Session *)data;
-    int clientSocket = *session->socket;
+void *serveClient(void *data) {
+    int clientSocket;
+    Session *session;
+
+    if (isServerConnection) {
+        clientSocket = *(int *)data;
+    } else {
+        session = (Session *)data;
+        clientSocket = *session->socket;
+    }
+
 
     bool shouldExit = false;
 
@@ -177,6 +192,26 @@ void *serveClient(void *data)
             sessionManager.closeSession(messagePacket->message);
             shouldExit = true;
             break;
+
+        case LeaderDiscovery:
+            // Sends acknowledge packet from server to server
+            commManager.sendPacket(clientSocket, new Packet(to_string(clientSocket), LeaderFound));
+
+            break;
+
+        case LeaderFound:
+            std::cout << "Received a LeaderFound packet" << std::endl;
+
+            break;
+        
+        case Heartbeat:
+
+            if (serverRing->isPrimary == false) {
+                cout << "Shouldn't receive hearbeat from not primary" << endl;
+            }
+            std::cout << "Received a heartbeat" << std::endl;
+            serverHeartbeat(clientSocket);
+            break;
         }
 
         delete messagePacket;
@@ -186,3 +221,58 @@ void *serveClient(void *data)
 
     return 0;
 }
+
+void serverHeartbeat(int socket) {
+    while (true) {
+        sleep(1);
+        int sendStatusCode = write(socket, new Packet("HEARTBEAT RECEIVED", Heartbeat), sizeof(Packet));
+        if (sendStatusCode < 0) {
+            if (errno == EPIPE)
+            {
+            //  logger_info("[Socket %d] When sending keepalive to client. Must be dead. Stopping answering keep alives\n", sockfd);
+            cout << "Error to send heartbeat to client, maybe it's dead. The socket is: " << socket << endl;
+            return;
+            }
+
+            //  logger_error("[Socket %d] When sending keepalive to client. Not an EPIPE. Will retry to send...\n", sockfd);
+            cout << "Error sending heartbeat to client, it will try again. Socket: " << socket << endl;
+            continue;
+        }
+
+        Packet *receivedPacket = new Packet; 
+        int readStatusCode = read(socket, receivedPacket, sizeof(Packet));
+        if (readStatusCode < 0) {
+            cout << "Error receiving heartbeat from client, maybe it's dead. The socket is: " << socket << endl;
+            return;
+        }
+    }
+}
+
+// void sigint_handler(int _sigint) {
+//     if (receivedSigint == false) {
+//         receivedSigint = true;
+//         cout << "Received SIGINT. Time to close the server." << endl;
+//         // logger_warn("SIGINT received, closing descriptors and finishing...\n");
+//         // cleanup(0);
+//         // close(*serverSocketCopy);
+//     }
+// }
+
+// void handle_signals(void) {
+//     struct sigaction sigintAction;
+//     sigintAction.sa_handler = sigint_handler;
+//     sigaction(SIGINT, &sigintAction, NULL);
+//     sigaction(SIGINT, &sigintAction, NULL); // Activating it twice works, so don't remove this ¯\_(ツ)_/¯
+
+//     struct sigaction sigint_ignore;
+//     sigintAction.sa_handler = SIG_IGN;
+//     sigaction(SIGPIPE, &sigintAction, NULL);
+//     sigaction(SIGPIPE, &sigintAction, NULL);
+
+//     // Create a different thread to handle CTRL + D
+//     // pthread_t *thread = (pthread_t *)malloc(sizeof(pthread_t));
+//     // pthread_create(thread, NULL, (void *(*)(void *)) & handle_eof, (void *)NULL);
+//     // logger_debug("Created new thread to handle EOF detection\n");
+
+//     // chained_list_append_end(chained_list_threads, (void *)thread);
+// }
