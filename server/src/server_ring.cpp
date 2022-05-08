@@ -23,13 +23,6 @@ void heartbeat(void *ringData);
 ServerRing* ServerRing::initServerRing() {
     ServerRing *ring = (ServerRing *)malloc(sizeof(ServerRing));
  
-    // memset(ring->ringPorts, 0, sizeof(int) * RING_SIZE);
-    // memset(ring->ringAddress, 0, sizeof(char *) * RING_SIZE);
-
-    // memcpy(ring->ringPorts, ringPorts, sizeof(ringPorts));
-    // memcpy(ring->ringAddress, ringAddress, sizeof(ringAddress));
-    cout << "PWDSFK" << endl;
-    // copy(ring->ringPorts, ring->ringPorts + RING_SIZE, ringPorts);
     ring->ringPorts[0] = 4000;
     ring->ringPorts[1] = 4001;
     ring->ringPorts[2] = 4002;
@@ -39,9 +32,7 @@ ServerRing* ServerRing::initServerRing() {
     ring->ringPorts[6] = 4006;
     ring->ringPorts[7] = 4007;
     ring->ringPorts[8] = 4008;
-    ring->ringPorts[9] = 4009;
-
-    cout << "PWDSFK" << endl;   
+    ring->ringPorts[9] = 4009; 
     // ServerRing newRing;
 
     // newRing.ringPorts.add;

@@ -111,9 +111,8 @@ void *authenticateClient(void *data) {
         *responsePacket = Packet(to_string(serverRing->primaryPort), LeaderFound);
         commManager.sendPacket(clientSocket, responsePacket);
         return socketCopy; // Maybe change to serverRing->primaryPort
-
     } else if (receivedPacket->type == Heartbeat) {
-        return socketCopy;
+        serverHeartbeat(clientSocket);
     } else {
         std::cout << "Received data to authenticate. User login: " << receivedPacket->message << std::endl;
         isServerConnection = false;
@@ -224,6 +223,7 @@ void *serveClient(void *data) {
 
 void serverHeartbeat(int socket) {
     while (true) {
+        std::cout << "Entered server hearbeat method. Socket: " << socket << std::endl;
         sleep(1);
         int sendStatusCode = write(socket, new Packet("HEARTBEAT RECEIVED", Heartbeat), sizeof(Packet));
         if (sendStatusCode < 0) {
