@@ -34,18 +34,12 @@ ServerRing* ServerRing::initServerRing() {
     ring->ringPorts[7] = 4007;
     ring->ringPorts[8] = 4008;
     ring->ringPorts[9] = 4009; 
-    // ServerRing newRing;
-
-    // newRing.ringPorts.add;
 
     ring->isPrimary = false;
     ring->currentIndex = -1; // We start incrementing it
     ring->isInElection = false;
     ring->ringAddress = "127.0.0.1";
     pthread_mutex_init(&ring->electionMutex, NULL);
-    // ring->ringPorts = { 4000, 4001, 4002, 4003, 4004, 4005, 4006, 4007, 4008, 4009 };
-    // ring->ringAddress = ringAddress;
-    // ring->ringPorts = ringPorts;
 
      // Creating and configuring sockfd for this node to receive messages
     if ((ring->currentSocket = socket(AF_INET, SOCK_STREAM, 0)) == -1) {
@@ -80,8 +74,6 @@ void ServerRing::connectServerRing(ServerRing *ring) {
      if (ring->isPrimary == false) {
          pthread_create(&ring->heartbeatThread, NULL, (void *(*)(void *)) & heartbeat, (void *)ring);
      }
-    //  if (!ring->is_primary)
-    //      pthread_create(&ring->keepalive_tid, NULL, (void *(*)(void *)) & keep_alive_primary, (void *)ring);
 }
 
 void ServerRing::bindServerRing(ServerRing *ring) {
@@ -108,7 +100,6 @@ void ServerRing::listenServerRing(ServerRing *ring) {
      if (listen(ring->currentSocket, RING_SIZE) < 0) {
          cout << "Error on ring to start to listen" << endl;
 
-         // Remember to close the socket already open, to free the port
          close(ring->currentSocket);
          exit(0);
      }
@@ -225,8 +216,6 @@ void heartbeat(void *ringData) {
                 return;
             }
             cout << "Error sending heartbeat: " << errno << endl;
-            // return;
-            // exit(0);
         }
 
         Packet *receivedPacket = new Packet; 
@@ -302,7 +291,7 @@ void startElection(ServerRing* ring) {
             exit(0);
         }
         close(sockfd);
-        
+
     } else {
         // If it is already in an election, can just unlock it again
         pthread_mutex_unlock(&ring->electionMutex);
